@@ -319,7 +319,6 @@ export function About() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const imgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
-  const ovalY = useTransform(scrollYProgress, [0, 1], [70, -50]);
   const wordX = useTransform(scrollYProgress, [0, 1], ['6%', '-10%']);
 
   return (
@@ -345,34 +344,17 @@ export function About() {
         >
           <motion.img
             src={SPEAKER_IMG}
-            alt="Celes D'Andrea dando una charla de Tiendanube"
+            alt="Celes D'Andrea en escena, dando una charla"
             loading="lazy"
             decoding="async"
-            style={{ y: imgY, scale: 1.18 }}
+            style={{ y: imgY, scale: 1.12 }}
           />
           <div className="about__arch-shade" />
-        </motion.div>
-
-        <motion.div
-          className="about__oval"
-          style={{ y: ovalY }}
-          initial={{ opacity: 0, scale: 0.7 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', stiffness: 90, damping: 14, delay: 0.7 }}
-          whileHover={{ scale: 1.05, rotate: 2 }}
-        >
-          <img src={HERO_IMG} alt="Retrato de Celes D'Andrea" loading="lazy" decoding="async" />
         </motion.div>
 
         <Sparkle className="sparkle--a" delay={1} />
         <Sparkle className="sparkle--b" delay={1.2} />
         <Sparkle className="sparkle--c" delay={1.4} />
-
-        <Reveal className="about__caption" delay={0.9} y={20}>
-          <span className="live-dot" />
-          EN ESCENA · “EL MOTOR DE TU NEGOCIO: CÓMO ESCALAR CON EL ECOSISTEMA DE TIENDANUBE”
-        </Reveal>
       </div>
 
       <div className="about__text">
