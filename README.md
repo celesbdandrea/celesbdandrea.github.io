@@ -33,7 +33,7 @@ Una sola vez: en GitHub → **Settings → Pages → Build and deployment → So
 | Qué | Dónde |
 | --- | --- |
 | Título, descripción, Open Graph, datos estructurados (JSON-LD) | `index.html` |
-| Imagen al compartir el link (1200×630) | `public/og-image.jpg` |
+| Imagen al compartir el link (1200×630) | `public/og-celes.jpg` |
 | Sitemap y robots | `public/sitemap.xml`, `public/robots.txt` |
 
 Si cambiás el dominio, reemplazá `celesdandrea.com` en esos archivos y en `public/CNAME`.
