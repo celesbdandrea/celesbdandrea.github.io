@@ -1,0 +1,61 @@
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Renueva el muro de dolores cada ~15 días (días 1 y 16 de cada mes, 09:00 ART)
+  schedule:
+    - cron: '0 12 1,16 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Actualizar muro de dolores
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          DOLORES_FEED_URL: ${{ vars.DOLORES_FEED_URL }}
+        run: |
+          npm run update:dolores
+          if ! git diff --quiet public/data/dolores.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/data/dolores.json
+            git commit -m "chore: actualizar muro de dolores"
+            git push
+          fi
+
+      - run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

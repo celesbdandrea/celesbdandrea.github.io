@@ -1,0 +1,42 @@
+{
+  "updatedAt": "2026-11-01T12:00:00.000Z",
+  "nextUpdate": "2026-11-16T12:00:00.000Z",
+  "items": [
+    {
+      "id": "s1",
+      "text": "Tengo visitas en la tienda pero casi nadie termina comprando.",
+      "rubro": "Indumentaria",
+      "nombre": "Lu"
+    },
+    {
+      "id": "s2",
+      "text": "No sé cuánto invertir en publicidad ni cómo medir si funciona.",
+      "rubro": "Belleza",
+      "nombre": ""
+    },
+    {
+      "id": "s3",
+      "text": "Vendo bien por Instagram pero no logro que la gente compre en la web.",
+      "rubro": "Accesorios",
+      "nombre": "Caro"
+    },
+    {
+      "id": "s4",
+      "text": "Me cuesta ponerle precio a mis productos sin perder plata con los envíos.",
+      "rubro": "Deco & hogar",
+      "nombre": ""
+    },
+    {
+      "id": "s5",
+      "text": "Hago todo sola y no me da el tiempo para planificar contenido.",
+      "rubro": "Alimentos",
+      "nombre": "Meli"
+    },
+    {
+      "id": "s6",
+      "text": "Quiero prepararme para CyberMonday pero no sé por dónde arrancar.",
+      "rubro": "Indumentaria",
+      "nombre": "Juan"
+    }
+  ]
+}
