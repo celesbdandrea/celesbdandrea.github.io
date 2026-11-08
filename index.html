@@ -3,19 +3,111 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Celes D'Andrea · Especialista en e-Commerce</title>
-    <meta name="description" content="Celes D'Andrea, especialista en e-Commerce en Tiendanube. Acompaño a emprendedores y comerciantes a escalar su negocio online, paso a paso." />
-    <meta property="og:title" content="Celes D'Andrea · Especialista en e-Commerce" />
+
+    <!-- SEO básico -->
+    <title>Celes D'Andrea · Especialista en e-Commerce y Tiendanube</title>
+    <meta name="description" content="Celes D'Andrea, especialista en e-Commerce en Tiendanube Argentina. Capacitaciones, talleres, asesorías 1:1 y auditorías para escalar tu tienda online, paso a paso." />
+    <meta name="author" content="Celeste D'Andrea" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://celesdandrea.com/" />
+
+    <!-- Open Graph (WhatsApp, LinkedIn, Facebook) -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="Celes D'Andrea" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:url" content="https://celesdandrea.com/" />
+    <meta property="og:title" content="Celes D'Andrea · Especialista en e-Commerce y Tiendanube" />
     <meta property="og:description" content="Capacitaciones, talleres y asesorías para escalar tu tienda online paso a paso." />
-    <meta property="og:image" content="/img/celes-hero.jpg" />
+    <meta property="og:image" content="https://celesdandrea.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Celes D'Andrea dando una charla de Tiendanube sobre cómo escalar tu negocio" />
+    <meta property="profile:first_name" content="Celeste" />
+    <meta property="profile:last_name" content="D'Andrea" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Celes D'Andrea · Especialista en e-Commerce y Tiendanube" />
+    <meta name="twitter:description" content="Capacitaciones, talleres y asesorías para escalar tu tienda online paso a paso." />
+    <meta name="twitter:image" content="https://celesdandrea.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Celes D'Andrea dando una charla de Tiendanube sobre cómo escalar tu negocio" />
+
+    <!-- Íconos y PWA -->
     <meta name="theme-color" content="#5c1414" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235c1414'/><text x='50' y='68' font-size='54' text-anchor='middle' fill='%23fbf6ea' font-family='Georgia,serif' font-style='italic'>C</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Rendimiento: precarga de la foto principal (LCP) -->
+    <link rel="preload" as="image" href="/img/celes-hero.jpg" fetchpriority="high" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" />
+
+    <!-- Datos estructurados (Google) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://celesdandrea.com/#website",
+            "url": "https://celesdandrea.com/",
+            "name": "Celes D'Andrea",
+            "inLanguage": "es-AR",
+            "publisher": { "@id": "https://celesdandrea.com/#celes" }
+          },
+          {
+            "@type": "ProfilePage",
+            "@id": "https://celesdandrea.com/#profile",
+            "url": "https://celesdandrea.com/",
+            "name": "Celes D'Andrea · Especialista en e-Commerce y Tiendanube",
+            "inLanguage": "es-AR",
+            "isPartOf": { "@id": "https://celesdandrea.com/#website" },
+            "primaryImageOfPage": "https://celesdandrea.com/og-image.jpg",
+            "mainEntity": { "@id": "https://celesdandrea.com/#celes" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://celesdandrea.com/#celes",
+            "name": "Celes D'Andrea",
+            "alternateName": "Celeste D'Andrea",
+            "givenName": "Celeste",
+            "familyName": "D'Andrea",
+            "url": "https://celesdandrea.com/",
+            "image": "https://celesdandrea.com/img/celes-hero.jpg",
+            "jobTitle": "Especialista en e-Commerce",
+            "description": "Especialista en e-Commerce en Tiendanube Argentina. Speaker y host de Entrenamiento Nube. Crea capacitaciones, talleres y contenidos educativos para emprendedores.",
+            "email": "mailto:celesteb.dandrea@gmail.com",
+            "worksFor": { "@type": "Organization", "name": "Tiendanube", "url": "https://www.tiendanube.com/" },
+            "alumniOf": { "@type": "CollegeOrUniversity", "name": "Universidad Argentina de la Empresa (UADE)" },
+            "homeLocation": { "@type": "Place", "name": "Buenos Aires, Argentina" },
+            "sameAs": [
+              "https://www.linkedin.com/in/celestedandrea/",
+              "https://www.instagram.com/celesbdandrea/"
+            ],
+            "knowsLanguage": "es",
+            "knowsAbout": ["e-Commerce", "Tiendanube", "Ventas online", "Marketing digital", "Comunicación", "Relaciones Públicas"],
+            "makesOffer": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Capacitaciones", "description": "Webinars y clases en vivo para aprender a vender online con herramientas concretas." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Talleres", "description": "Espacios prácticos para trabajar sobre tu propia tienda: catálogo, comunicación, redes y ventas." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Asesoría 1:1", "description": "Un plan a medida para definir el próximo paso de tu negocio online." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Auditoría de negocio", "description": "Revisión de la tienda de punta a punta para detectar qué frena las ventas." } }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width:40rem;margin:4rem auto;padding:0 1rem;font-family:Georgia,serif;color:#5c1414">
+        <h1>Celes D'Andrea · Especialista en e-Commerce</h1>
+        <p>Especialista en e-Commerce en Tiendanube Argentina. Acompaño a emprendedores y comerciantes a escalar su negocio online, paso a paso, con capacitaciones, talleres, asesorías 1:1 y auditorías de negocio.</p>
+        <p>Speaker y host de Entrenamiento Nube, la capacitación online, en vivo y gratuita de Tiendanube.</p>
+        <p>Contacto: <a href="mailto:celesteb.dandrea@gmail.com">celesteb.dandrea@gmail.com</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

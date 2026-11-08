@@ -346,6 +346,8 @@ export function About() {
           <motion.img
             src={SPEAKER_IMG}
             alt="Celes D'Andrea dando una charla de Tiendanube"
+            loading="lazy"
+            decoding="async"
             style={{ y: imgY, scale: 1.18 }}
           />
           <div className="about__arch-shade" />
@@ -360,7 +362,7 @@ export function About() {
           transition={{ type: 'spring', stiffness: 90, damping: 14, delay: 0.7 }}
           whileHover={{ scale: 1.05, rotate: 2 }}
         >
-          <img src={HERO_IMG} alt="Retrato de Celes D'Andrea" />
+          <img src={HERO_IMG} alt="Retrato de Celes D'Andrea" loading="lazy" decoding="async" />
         </motion.div>
 
         <Sparkle className="sparkle--a" delay={1} />

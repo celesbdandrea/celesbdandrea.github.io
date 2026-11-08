@@ -26,8 +26,19 @@ npm run build    # genera /dist
 
 Una sola vez: en GitHub → **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-**Dominio propio:** creá `public/CNAME` con tu dominio (ej. `celesdandrea.com`) y configurá el DNS
-según la guía de GitHub Pages.
+**Dominio:** el sitio se publica en **https://celesdandrea.com** (`public/CNAME` + DNS apuntando a GitHub Pages).
+
+## SEO
+
+| Qué | Dónde |
+| --- | --- |
+| Título, descripción, Open Graph, datos estructurados (JSON-LD) | `index.html` |
+| Imagen al compartir el link (1200×630) | `public/og-image.jpg` |
+| Sitemap y robots | `public/sitemap.xml`, `public/robots.txt` |
+
+Si cambiás el dominio, reemplazá `celesdandrea.com` en esos archivos y en `public/CNAME`.
+Si cambiás LinkedIn o Instagram en `src/config.js`, actualizalos también en `sameAs` de `index.html`.
+Sitemap enviado en Google Search Console como `sitemap.xml`.
 
 ## Muro de dolores (se renueva cada 15 días)
 

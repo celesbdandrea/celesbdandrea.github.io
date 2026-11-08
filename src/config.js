@@ -7,8 +7,8 @@ export const CONTACT = {
   // Ejemplo Argentina: 54 9 11 1234-5678  →  "5491112345678"
   whatsapp: '5491100000000',
   email: 'celesteb.dandrea@gmail.com',
-  linkedin: 'https://www.linkedin.com/',
-  instagram: 'https://www.instagram.com/',
+  linkedin: 'https://www.linkedin.com/in/celestedandrea/',
+  instagram: 'https://www.instagram.com/celesbdandrea/',
 };
 
 export const LINKS = {

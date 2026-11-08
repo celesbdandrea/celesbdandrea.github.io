@@ -1,0 +1,10 @@
+{
+  "name": "Celes D'Andrea · Especialista en e-Commerce",
+  "short_name": "Celes D'Andrea",
+  "lang": "es-AR",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#fbf6ea",
+  "theme_color": "#5c1414",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
