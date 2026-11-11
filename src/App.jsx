@@ -31,7 +31,7 @@ export default function App() {
         <Process />
         <Marquee
           reverse
-          variant="marquee--light"
+          variant="marquee--bordo"
           items={['Tu próximo paso', 'Vender más', 'Crecer con claridad', 'Escalar', 'Comunidad']}
         />
         <Dolores />

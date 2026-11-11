@@ -10,6 +10,14 @@ import {
 import { Reveal, Stagger, SplitTitle, CountUp, Magnetic, TiltCard } from './motion.jsx';
 import { LINKS, CONTACT } from '../config.js';
 
+export function Arrow() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 12h15M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 const HERO_IMG = `${import.meta.env.BASE_URL}img/celes-hero.jpg`;
 
 /* ───────────────────────── Barra de progreso ───────────────────────── */
@@ -55,7 +63,7 @@ export function Nav() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        CELES <span className="it">D'ANDREA</span>
+        Celes D'Andrea
       </motion.a>
       <motion.nav
         className="nav__links"
@@ -74,7 +82,7 @@ export function Nav() {
           </motion.a>
         ))}
       </motion.nav>
-      <Magnetic href="#contacto" className="btn btn--pill nav__cta">
+      <Magnetic href="#contacto" className="pill nav__cta">
         Agendá una charla
       </Magnetic>
       <button
@@ -125,7 +133,6 @@ export function Hero() {
 
   return (
     <section className="hero" id="top" ref={ref}>
-      <div className="hero__grain" />
       <motion.div className="hero__text" style={{ y: textY, opacity: fade }}>
         <motion.p
           className="eyebrow eyebrow--light"
@@ -140,7 +147,7 @@ export function Hero() {
           immediate
           delay={0.35}
           className="hero__title"
-          text="ESCALÁ *tu* NEGOCIO ONLINE, *paso* *a* *paso*"
+          text="Escalá tu negocio online, *paso* *a* *paso*"
         />
         <motion.p
           className="hero__sub"
@@ -157,32 +164,24 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.8 }}
         >
-          <Magnetic href="#contacto" className="btn btn--pill btn--cream">
+          <Magnetic href="#contacto" className="btn btn--primary-inv">
             Empezá hoy
           </Magnetic>
-          <Magnetic href="#sobre-mi" className="btn btn--ghost">
-            Conocerme ↓
+          <Magnetic href="#sobre-mi" className="cta">
+            Conocerme
           </Magnetic>
         </motion.div>
       </motion.div>
 
       <motion.div
         className="hero__photo"
-        initial={{ clipPath: 'inset(100% 0% 0% 0% round 999px 999px 0 0)' }}
-        animate={{ clipPath: 'inset(0% 0% 0% 0% round 999px 999px 0 0)' }}
+        initial={{ clipPath: 'inset(100% 0% 0% 0% round 24px)' }}
+        animate={{ clipPath: 'inset(0% 0% 0% 0% round 24px)' }}
         transition={{ duration: 1.4, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}
       >
         <motion.img src={HERO_IMG} alt="Celes D'Andrea trabajando con su laptop" style={{ y: imgY, scale: imgScale }} />
       </motion.div>
 
-      <motion.div
-        className="hero__badge"
-        initial={{ opacity: 0, scale: 0.6, rotate: -20 }}
-        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{ delay: 1.6, type: 'spring', stiffness: 120 }}
-      >
-        <RotatingBadge text="ENTRENAMIENTO NUBE • SPEAKER • HOST • " />
-      </motion.div>
 
       <motion.a
         href="#manifiesto"
@@ -191,31 +190,9 @@ export function Hero() {
         transition={{ repeat: Infinity, duration: 2 }}
         aria-label="Bajar"
       >
-        scroll
         <span />
       </motion.a>
     </section>
-  );
-}
-
-function RotatingBadge({ text }) {
-  return (
-    <motion.svg
-      viewBox="0 0 200 200"
-      className="rot-badge"
-      animate={{ rotate: 360 }}
-      transition={{ repeat: Infinity, duration: 18, ease: 'linear' }}
-    >
-      <defs>
-        <path id="circlePath" d="M100,100 m-75,0 a75,75 0 1,1 150,0 a75,75 0 1,1 -150,0" />
-      </defs>
-      <circle cx="100" cy="100" r="98" className="rot-badge__bg" />
-      <text className="rot-badge__text">
-        <textPath href="#circlePath">{text}</textPath>
-      </text>
-      <circle cx="100" cy="100" r="34" className="rot-badge__hole" />
-      <circle cx="100" cy="100" r="6" className="rot-badge__dot" />
-    </motion.svg>
   );
 }
 
@@ -223,21 +200,14 @@ function RotatingBadge({ text }) {
 export function Manifesto() {
   return (
     <section className="manifesto" id="manifiesto">
-      <motion.div
-        className="manifesto__icon"
-        initial={{ opacity: 0, rotate: -30, scale: 0.6 }}
-        whileInView={{ opacity: 1, rotate: -8, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ type: 'spring', stiffness: 90, damping: 12 }}
-        whileHover={{ rotate: 8, scale: 1.08 }}
-      >
-        <CartIcon />
-      </motion.div>
+      <p className="watermark" aria-hidden>
+        ventas
+      </p>
       <div className="manifesto__body">
-        <SplitTitle
-          className="display display--dark"
-          text="VENDÉ MÁS *online* — SIN *perderte* EN EL CAMINO"
-        />
+        <Reveal as="p" className="eyebrow">
+          Estrategia · e-Commerce
+        </Reveal>
+        <SplitTitle className="display display--dark" text="Vendé más online, sin *perderte* en el camino" />
         <Reveal delay={0.3}>
           <p className="mono-p center">
             Ayudo a emprendedores y comerciantes a ordenar su tienda, entender sus números y dar el
@@ -245,35 +215,12 @@ export function Manifesto() {
           </p>
         </Reveal>
         <Reveal delay={0.5}>
-          <a href="#contacto" className="script-link">
-            Empecemos hoy
-            <motion.svg viewBox="0 0 120 20" className="script-underline">
-              <motion.path
-                d="M2 14 C 30 4, 60 20, 118 6"
-                initial={{ pathLength: 0 }}
-                whileInView={{ pathLength: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.4, delay: 0.8 }}
-              />
-            </motion.svg>
+          <a href="#contacto" className="cta">
+            Empecemos hoy <Arrow />
           </a>
         </Reveal>
       </div>
-      <div className="manifesto__vinyl">
-        <RotatingBadge text="TIENDANUBE • E-COMMERCE • CRECER • " />
-      </div>
     </section>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 10h8l7 30h30l6-20H18" />
-      <circle cx="26" cy="50" r="4" />
-      <circle cx="46" cy="50" r="4" />
-      <path d="M30 26l5 5 9-9" />
-    </svg>
   );
 }
 
@@ -289,7 +236,7 @@ export function Marquee({ items, reverse = false, variant = '' }) {
       >
         {row.map((t, i) => (
           <span key={i} className={i % 2 ? 'it' : ''}>
-            {t} <em>✦</em>
+            {t} <em aria-hidden />
           </span>
         ))}
       </motion.div>
@@ -300,45 +247,18 @@ export function Marquee({ items, reverse = false, variant = '' }) {
 /* ───────────────────────── Sobre mí ───────────────────────── */
 const SPEAKER_IMG = `${import.meta.env.BASE_URL}img/celes-speaker.jpg`;
 
-function Sparkle({ className, delay = 0 }) {
-  return (
-    <motion.svg
-      viewBox="0 0 24 24"
-      className={`sparkle ${className}`}
-      initial={{ opacity: 0, scale: 0 }}
-      whileInView={{ opacity: [0, 1, 0.5, 1], scale: [0, 1.2, 0.9, 1], rotate: [0, 90] }}
-      viewport={{ once: true }}
-      transition={{ duration: 1.4, delay }}
-    >
-      <path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0Z" />
-    </motion.svg>
-  );
-}
-
 export function About() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const imgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
-  const wordX = useTransform(scrollYProgress, [0, 1], ['6%', '-10%']);
 
   return (
     <section className="about" id="sobre-mi" ref={ref}>
-      <motion.p className="about__ghost" style={{ x: wordX }} aria-hidden>
-        PORTFOLIO <span className="it">E-COMMERCE</span>
-      </motion.p>
-
       <div className="about__visual">
         <motion.div
-          className="about__outline"
-          initial={{ opacity: 0, scale: 0.92 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        />
-        <motion.div
           className="about__arch"
-          initial={{ clipPath: 'inset(100% 0% 0% 0%)' }}
-          whileInView={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+          initial={{ clipPath: 'inset(100% 0% 0% 0% round 24px)' }}
+          whileInView={{ clipPath: 'inset(0% 0% 0% 0% round 24px)' }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}
         >
@@ -349,19 +269,15 @@ export function About() {
             decoding="async"
             style={{ y: imgY, scale: 1.12 }}
           />
-          <div className="about__arch-shade" />
         </motion.div>
 
-        <Sparkle className="sparkle--a" delay={1} />
-        <Sparkle className="sparkle--b" delay={1.2} />
-        <Sparkle className="sparkle--c" delay={1.4} />
       </div>
 
       <div className="about__text">
         <Reveal as="p" className="eyebrow eyebrow--light">
           Speaker · Host · Especialista en e-Commerce
         </Reveal>
-        <SplitTitle className="display display--light about__title" text="CONOCÉ *A* CELES" />
+        <SplitTitle className="display display--light about__title" text="Conocé a *Celes*" />
         <motion.span
           className="about__rule"
           initial={{ scaleX: 0 }}
@@ -373,7 +289,7 @@ export function About() {
         <div className="about__cols">
           <Reveal delay={0.2}>
             <h3 className="about__h">
-              ¿QUIÉN <span className="it">SOY?</span>
+              ¿Quién <span className="it">soy?</span>
             </h3>
             <p className="mono-p mono-p--light">
               Especialista en e-Commerce en Tiendanube Argentina. Licenciada en Relaciones Públicas e
@@ -382,7 +298,7 @@ export function About() {
           </Reveal>
           <Reveal delay={0.35}>
             <h3 className="about__h">
-              ¿QUÉ <span className="it">HAGO?</span>
+              ¿Qué <span className="it">hago?</span>
             </h3>
             <p className="mono-p mono-p--light">
               Creo capacitaciones, talleres y contenidos educativos. Soy speaker y host de Entrenamiento
@@ -393,15 +309,15 @@ export function About() {
 
         <Reveal delay={0.45}>
           <blockquote className="about__quote">
-            “CRECER NO REQUIERE HACERLO TODO A LA VEZ — <span className="it">REQUIERE SABER CUÁL ES EL PRÓXIMO PASO.</span>”
+            “Crecer no requiere hacerlo todo a la vez: <span className="it">requiere saber cuál es el próximo paso.</span>”
           </blockquote>
         </Reveal>
 
         <Stagger className="about__facts" gap={0.1}>
           {[
             ['UADE', 'Lic. en RR.PP. e Institucionales'],
-            ['TIENDANUBE', 'Especialista en e-Commerce'],
-            ['ENTRENAMIENTO NUBE', 'Speaker & host mensual'],
+            ['Tiendanube', 'Especialista en e-Commerce'],
+            ['Entrenamiento Nube', 'Speaker y host mensual'],
           ].map(([t, s]) => (
             <Stagger.Item key={t} className="fact">
               <strong>{t}</strong>
@@ -411,8 +327,8 @@ export function About() {
         </Stagger>
 
         <Reveal delay={0.5}>
-          <Magnetic href="#contacto" className="btn btn--pill btn--outline">
-            Trabajá conmigo ✦
+          <Magnetic href="#contacto" className="pill">
+            Trabajá conmigo <Arrow />
           </Magnetic>
         </Reveal>
       </div>
@@ -423,20 +339,20 @@ export function About() {
 /* ───────────────────────── Franja de credenciales ───────────────────────── */
 export function Credentials() {
   const items = [
-    { t: 'Tiendanube', s: 'serif' },
-    { t: 'UADE', s: 'caps' },
-    { t: 'Entrenamiento Nube', s: 'italic' },
-    { t: 'Marketing Digital', s: 'caps' },
-    { t: 'RR.PP.', s: 'serif' },
+    { t: 'Tiendanube', s: 'roman' },
+    { t: 'UADE', s: 'italic' },
+    { t: 'Entrenamiento Nube', s: 'roman' },
+    { t: 'Marketing digital', s: 'italic' },
+    { t: 'RR.PP.', s: 'roman' },
   ];
   return (
     <section className="creds">
-      <Reveal as="p" className="creds__label">
-        Trayectoria &amp; formación
+      <Reveal as="p" className="creds__label eyebrow">
+        Trayectoria y formación
       </Reveal>
       <Stagger className="creds__list" gap={0.1}>
         {items.map((i) => (
-          <Stagger.Item key={i.t} className={`creds__item creds__item--${i.s}`} whileHover={{ scale: 1.08, color: '#7d1d1d' }}>
+          <Stagger.Item key={i.t} className={`creds__item creds__item--${i.s}`}>
             {i.t}
           </Stagger.Item>
         ))}
@@ -486,25 +402,24 @@ export function Services() {
         <Reveal as="p" className="eyebrow">
           Qué hago
         </Reveal>
-        <SplitTitle className="display display--dark" text="FORMAS *de* CRECER *juntos*" />
+        <SplitTitle className="display display--dark" text="Formas de *crecer* juntos" />
       </div>
       <Stagger className="services__grid" gap={0.1}>
         {SERVICES.map((s) => (
           <TiltCard className="service-card" key={s.n}>
-            <div className="service-card__glow" />
             <span className="service-card__n">{s.n}</span>
             <h3>{s.title}</h3>
             <p>{s.text}</p>
-            <span className="chip">{s.tag}</span>
+            <p className="eyebrow service-card__tag">{s.tag}</p>
           </TiltCard>
         ))}
         <TiltCard className="service-card service-card--cta">
           <h3>
-            ¿POR DÓNDE <span className="it">EMPIEZO?</span>
+            ¿Por dónde <span className="it">empiezo?</span>
           </h3>
           <p>Contame qué necesitás y te digo cómo te puedo ayudar.</p>
-          <Magnetic href="#contacto" className="btn btn--pill btn--cream">
-            Escribime →
+          <Magnetic href="#contacto" className="btn btn--primary-inv">
+            Escribime <Arrow />
           </Magnetic>
         </TiltCard>
       </Stagger>
@@ -531,14 +446,14 @@ export function Entrenamiento() {
   return (
     <section className="nube" id="entrenamiento-nube" ref={ref}>
       <motion.div className="nube__bg" style={{ y: bgY }} aria-hidden>
-        NUBE
+        nube
       </motion.div>
       <div className="nube__inner">
         <div className="nube__left">
           <Reveal as="p" className="eyebrow eyebrow--light">
-            Speaker &amp; host · Tiendanube
+            Speaker y host · Tiendanube
           </Reveal>
-          <SplitTitle className="display display--light" text="ENTRENAMIENTO *Nube*" />
+          <SplitTitle className="display display--light" text="Entrenamiento *Nube*" />
           <Reveal delay={0.2}>
             <p className="mono-p mono-p--light">
               Todos los meses hosteo y doy charlas en Entrenamiento Nube: una capacitación online, en
@@ -560,11 +475,11 @@ export function Entrenamiento() {
             ))}
           </div>
           <Reveal delay={0.4} className="nube__ctas">
-            <Magnetic href={LINKS.entrenamientoNube} target="_blank" rel="noreferrer" className="btn btn--pill btn--cream">
-              Anotate al próximo →
+            <Magnetic href={LINKS.entrenamientoNube} target="_blank" rel="noreferrer" className="btn btn--primary-inv">
+              Anotate al próximo
             </Magnetic>
-            <Magnetic href={LINKS.playlist} target="_blank" rel="noreferrer" className="btn btn--ghost">
-              ▶ Ver ediciones anteriores
+            <Magnetic href={LINKS.playlist} target="_blank" rel="noreferrer" className="cta">
+              Ver ediciones anteriores <Arrow />
             </Magnetic>
           </Reveal>
         </div>
@@ -574,7 +489,7 @@ export function Entrenamiento() {
             <span className="live-dot" /> En vivo · una vez por mes
           </div>
           <p className="nube__card-title">
-            TEMAS QUE <span className="it">VEMOS</span>
+            Temas que <span className="it">vemos</span>
           </p>
           <ul className="topics">
             {TOPICS.map((t, i) => (
@@ -615,7 +530,7 @@ export function Process() {
         <Reveal as="p" className="eyebrow">
           Cómo trabajamos
         </Reveal>
-        <SplitTitle className="display display--dark" text="PASO *a* PASO" />
+        <SplitTitle className="display display--dark" text="Paso a *paso*" />
       </div>
       <div className="process__list">
         <div className="process__rail">
@@ -648,7 +563,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer__top">
-        <p className="footer__script">gracias por pasar ♡</p>
+        <p className="footer__script">Gracias por pasar.</p>
         <nav className="footer__links">
           <a href={`mailto:${CONTACT.email}`}>Email</a>
           <a href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">
@@ -672,9 +587,9 @@ export function Footer() {
         viewport={{ once: true }}
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        CELES <span className="it">D'ANDREA</span>
+        Celes <span className="it">D'Andrea</span>
       </motion.p>
-      <p className="footer__legal">© {new Date().getFullYear()} Celes D'Andrea · Hecho con cariño en Buenos Aires</p>
+      <p className="footer__legal">© {new Date().getFullYear()} Celes D'Andrea · Buenos Aires, Argentina</p>
     </footer>
   );
 }

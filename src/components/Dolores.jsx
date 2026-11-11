@@ -42,7 +42,7 @@ export default function Dolores() {
   async function submit(e) {
     e.preventDefault();
     if (!valid) {
-      toast('Contame un poquito más (mínimo 10 caracteres) ✍️', 'warn');
+      toast('Contame un poco más: mínimo 10 caracteres.', 'warn');
       return;
     }
     setStatus('sending');
@@ -69,7 +69,7 @@ export default function Dolores() {
       setMine({ id: 'mine', text: payload.dolor, rubro: payload.rubro, nombre: payload.nombre, mine: true });
       setStatus('sent');
       setForm({ nombre: '', rubro: '', dolor: '' });
-      toast('¡Gracias! Tu mensaje llegó 💌', 'ok');
+      toast('Gracias, tu mensaje llegó.', 'ok');
     } catch {
       setStatus('idle');
       toast('Ups, no se pudo enviar. Probá de nuevo en un ratito.', 'error');
@@ -84,7 +84,7 @@ export default function Dolores() {
         <Reveal as="p" className="eyebrow">
           Muro de la comunidad
         </Reveal>
-        <SplitTitle className="display display--dark" text="¿QUÉ *te* QUITA *el* SUEÑO?" />
+        <SplitTitle className="display display--dark" text="¿Qué te quita el *sueño?*" />
         <Reveal delay={0.2}>
           <p className="mono-p center">
             Dejame tu principal dolor con tu negocio online. Los mensajes aparecen en este muro (de forma
@@ -118,7 +118,7 @@ export default function Dolores() {
                       }.`
                     : 'Se abrió tu correo con el mensaje listo para enviar.'}
                 </p>
-                <button className="btn btn--pill btn--wine" onClick={() => setStatus('idle')}>
+                <button className="btn btn--outline" onClick={() => setStatus('idle')}>
                   Dejar otro mensaje
                 </button>
               </motion.div>
@@ -165,7 +165,7 @@ export default function Dolores() {
                       className="meter__bar"
                       animate={{
                         width: `${(form.dolor.length / MAX) * 100}%`,
-                        backgroundColor: left < 30 ? '#b8322f' : '#7d1d1d',
+                        backgroundColor: left < 30 ? '#550b14' : '#7e6961',
                       }}
                     />
                     <motion.small key={left < 30} animate={{ scale: left < 30 ? [1, 1.2, 1] : 1 }} className={left < 30 ? 'warn' : ''}>
@@ -173,7 +173,7 @@ export default function Dolores() {
                     </motion.small>
                   </div>
                 </label>
-                <Magnetic as="button" type="submit" className="btn btn--pill btn--wine btn--block" disabled={status === 'sending'} strength={0.15}>
+                <Magnetic as="button" type="submit" className="btn btn--primary btn--block" disabled={status === 'sending'} strength={0.15}>
                   {status === 'sending' ? <span className="spinner" /> : 'Sumar mi mensaje al muro'}
                 </Magnetic>
                 <p className="fineprint">No publiques datos personales. Los mensajes se moderan antes de aparecer.</p>
@@ -185,7 +185,7 @@ export default function Dolores() {
         <div className="dolores__wall">
           <div className="wall-meta">
             <span>
-              <span className="live-dot live-dot--wine" /> {data.items.length} mensajes en el muro
+              <span className="live-dot" /> {data.items.length} mensajes en el muro
             </span>
             {remaining !== null && (
               <span>
@@ -207,11 +207,11 @@ export default function Dolores() {
                     layout
                     key={m.id}
                     className={`note ${TINTS[i % TINTS.length]} ${m.mine ? 'note--mine' : ''}`}
-                    initial={{ opacity: 0, y: 40, rotate: i % 2 ? 4 : -4 }}
-                    whileInView={{ opacity: 1, y: 0, rotate: i % 3 === 0 ? -1.5 : i % 3 === 1 ? 1.2 : 0 }}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-40px' }}
                     transition={{ type: 'spring', stiffness: 90, damping: 14, delay: (i % 4) * 0.08 }}
-                    whileHover={{ rotate: 0, scale: 1.04, zIndex: 2 }}
+                    whileHover={{ y: -4, zIndex: 2 }}
                   >
                     {m.mine && <span className="note__badge">tu mensaje · en revisión</span>}
                     <blockquote>“{m.text}”</blockquote>

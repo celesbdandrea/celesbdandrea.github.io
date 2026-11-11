@@ -5,10 +5,10 @@ import { CONTACT } from '../config.js';
 import { useToast } from './Toast.jsx';
 
 const MOTIVOS = [
-  { id: 'asesoria', label: 'Quiero asesorarme', emoji: '💬', intro: 'me gustaría recibir una asesoría para mi negocio online' },
-  { id: 'escalar', label: 'Necesito escalar mi negocio', emoji: '📈', intro: 'necesito ayuda para escalar mi negocio' },
-  { id: 'paso', label: 'No sé cuál es mi próximo paso', emoji: '🧭', intro: 'no sé cuál es el próximo paso para mi negocio' },
-  { id: 'auditoria', label: 'Quiero auditar mi negocio', emoji: '🔍', intro: 'quiero hacer una auditoría de mi negocio' },
+  { id: 'asesoria', label: 'Quiero asesorarme', intro: 'me gustaría recibir una asesoría para mi negocio online' },
+  { id: 'escalar', label: 'Necesito escalar mi negocio', intro: 'necesito ayuda para escalar mi negocio' },
+  { id: 'paso', label: 'No sé cuál es mi próximo paso', intro: 'no sé cuál es el próximo paso para mi negocio' },
+  { id: 'auditoria', label: 'Quiero auditar mi negocio', intro: 'quiero hacer una auditoría de mi negocio' },
 ];
 
 export default function Contact() {
@@ -34,7 +34,7 @@ export default function Contact() {
   function guard() {
     setTouched(true);
     if (missing) {
-      toast('Completá tu nombre y tu mensaje para enviarlo ✨', 'warn');
+      toast('Completá tu nombre y tu mensaje para enviarlo.', 'warn');
       return false;
     }
     return true;
@@ -43,20 +43,20 @@ export default function Contact() {
   function sendWhatsApp() {
     if (!guard()) return;
     window.open(`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-    toast('Abriendo WhatsApp con tu mensaje listo 💚', 'ok');
+    toast('Abriendo WhatsApp con tu mensaje listo.', 'ok');
   }
 
   function sendEmail() {
     if (!guard()) return;
     const subject = `${m.label} — ${f.negocio.trim() || f.nombre.trim()}`;
     window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    toast('Abriendo tu correo con el mensaje listo 💌', 'ok');
+    toast('Abriendo tu correo con el mensaje listo.', 'ok');
   }
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
-      toast('Mensaje copiado al portapapeles 📋', 'ok');
+      toast('Mensaje copiado al portapapeles.', 'ok');
     } catch {
       toast('No se pudo copiar, seleccionalo a mano.', 'error');
     }
@@ -70,7 +70,7 @@ export default function Contact() {
         <Reveal as="p" className="eyebrow eyebrow--light">
           Contacto
         </Reveal>
-        <SplitTitle className="display display--light" text="DEMOS *el* PRÓXIMO *paso*" />
+        <SplitTitle className="display display--light" text="Demos el próximo *paso*" />
         <Reveal delay={0.2}>
           <p className="mono-p mono-p--light center">
             Elegí qué necesitás, completá tus datos y te armo el mensaje listo para enviarme por
@@ -97,7 +97,6 @@ export default function Contact() {
                   {motivo === x.id && (
                     <motion.span layoutId="motivo-bg" className="motivo__bg" transition={{ type: 'spring', stiffness: 300, damping: 28 }} />
                   )}
-                  <span className="motivo__emoji">{x.emoji}</span>
                   <span className="motivo__label">{x.label}</span>
                 </motion.button>
               ))}
@@ -127,18 +126,18 @@ export default function Contact() {
             />
           </label>
           <div className="contact__buttons">
-            <Magnetic as="button" type="button" className="btn btn--pill btn--wa" onClick={sendWhatsApp} strength={0.2}>
+            <Magnetic as="button" type="button" className="btn btn--primary-inv" onClick={sendWhatsApp} strength={0.2}>
               <WaIcon /> Enviar por WhatsApp
             </Magnetic>
-            <Magnetic as="button" type="button" className="btn btn--pill btn--cream" onClick={sendEmail} strength={0.2}>
-              ✉ Enviar por correo
+            <Magnetic as="button" type="button" className="btn btn--outline" onClick={sendEmail} strength={0.2}>
+              Enviar por correo
             </Magnetic>
           </div>
         </Reveal>
 
         <Reveal className="preview" delay={0.2} x={40} y={0}>
           <div className="preview__head">
-            <span className="preview__avatar">C</span>
+            <span className="preview__avatar">CD</span>
             <div>
               <strong>Celes D'Andrea</strong>
               <small>
