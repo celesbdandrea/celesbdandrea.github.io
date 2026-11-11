@@ -245,7 +245,7 @@ export function Marquee({ items, reverse = false, variant = '' }) {
 }
 
 /* ───────────────────────── Sobre mí ───────────────────────── */
-const SPEAKER_IMG = `${import.meta.env.BASE_URL}img/celes-speaker.jpg`;
+const PORTRAIT_IMG = `${import.meta.env.BASE_URL}img/celes-retrato.jpg`;
 
 export function About() {
   const ref = useRef(null);
@@ -254,24 +254,29 @@ export function About() {
 
   return (
     <section className="about" id="sobre-mi" ref={ref}>
-      <div className="about__visual">
+      <motion.div
+        className="about__visual"
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-80px' }}
+      >
         <motion.div
           className="about__arch"
-          initial={{ clipPath: 'inset(100% 0% 0% 0% round 24px)' }}
-          whileInView={{ clipPath: 'inset(0% 0% 0% 0% round 24px)' }}
-          viewport={{ once: true, margin: '-80px' }}
+          variants={{
+            hidden: { clipPath: 'inset(100% 0% 0% 0% round 24px)' },
+            show: { clipPath: 'inset(0% 0% 0% 0% round 24px)' },
+          }}
           transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}
         >
           <motion.img
-            src={SPEAKER_IMG}
-            alt="Celes D'Andrea en escena, dando una charla"
+            src={PORTRAIT_IMG}
+            alt="Retrato de Celes D'Andrea con los brazos cruzados"
             loading="lazy"
             decoding="async"
             style={{ y: imgY, scale: 1.12 }}
           />
         </motion.div>
-
-      </div>
+      </motion.div>
 
       <div className="about__text">
         <Reveal as="p" className="eyebrow eyebrow--light">
@@ -332,6 +337,44 @@ export function About() {
           </Magnetic>
         </Reveal>
       </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── En escena ───────────────────────── */
+const ESCENA = [
+  { src: 'escena-charla.jpg', alt: "Celes D'Andrea dando una charla sobre la gestión de envíos en Tiendanube", pos: '55% 30%' },
+  { src: 'escena-panel.jpg', alt: "Celes D'Andrea hablando en un panel sobre e-commerce", pos: '50% 35%' },
+  { src: 'escena-ecommerce.jpg', alt: "Celes D'Andrea presentando por qué crece el e-commerce", pos: '28% 30%' },
+];
+
+export function Escena() {
+  return (
+    <section className="escena" id="en-escena">
+      <div className="section-head">
+        <Reveal as="p" className="eyebrow">
+          Speaker
+        </Reveal>
+        <SplitTitle className="display display--dark" text="En *escena*" />
+        <Reveal delay={0.2}>
+          <p className="mono-p center">
+            Charlas, paneles y capacitaciones para emprendedores y marcas que quieren vender más online.
+          </p>
+        </Reveal>
+      </div>
+      <Stagger className="escena__grid" gap={0.12}>
+        {ESCENA.map((f) => (
+          <Stagger.Item key={f.src} className="escena__foto">
+            <img
+              src={`${import.meta.env.BASE_URL}img/${f.src}`}
+              alt={f.alt}
+              loading="lazy"
+              decoding="async"
+              style={{ objectPosition: f.pos }}
+            />
+          </Stagger.Item>
+        ))}
+      </Stagger>
     </section>
   );
 }

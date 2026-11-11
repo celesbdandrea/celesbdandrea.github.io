@@ -6,6 +6,7 @@ import {
   Manifesto,
   Marquee,
   About,
+  Escena,
   Credentials,
   Services,
   Entrenamiento,
@@ -25,6 +26,7 @@ export default function App() {
         <Manifesto />
         <Marquee items={['e-Commerce', 'Tiendanube', 'Estrategia', 'Ventas online', 'Marketing digital', 'Paso a paso']} />
         <About />
+        <Escena />
         <Credentials />
         <Services />
         <Entrenamiento />

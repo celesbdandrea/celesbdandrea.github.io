@@ -43,6 +43,7 @@
   box-sizing: border-box;
 }
 html {
+  overflow-x: clip;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
@@ -558,7 +559,7 @@ section {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 37% 40%;
+  object-position: 44% 30%;
 }
 .about__text {
   position: relative;
@@ -616,6 +617,33 @@ section {
   font-size: 14px;
   line-height: 20px;
   color: var(--marfil-80);
+}
+
+/* ─── En escena ─── */
+.escena {
+  background: var(--marfil);
+  padding: var(--section-y) var(--gutter);
+}
+.escena__grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: var(--space-2);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.escena__foto {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--arena);
+}
+.escena__foto:first-child {
+  aspect-ratio: auto;
+}
+.escena__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ─── Credenciales ─── */
@@ -1454,6 +1482,13 @@ section {
   }
   .wall-grid {
     columns: 1;
+  }
+  .escena__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .escena__foto:first-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 3 / 2;
   }
   .about__cols,
   .about__facts {
