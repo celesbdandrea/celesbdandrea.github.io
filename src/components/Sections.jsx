@@ -343,9 +343,10 @@ export function About() {
 
 /* ───────────────────────── En escena ───────────────────────── */
 const ESCENA = [
-  { src: 'escena-charla.jpg', alt: "Celes D'Andrea dando una charla sobre la gestión de envíos en Tiendanube", pos: '55% 30%' },
+  { src: 'escena-set.jpg', alt: "Celes D'Andrea sentada en un set de grabación, sonriendo", pos: '50% 35%' },
   { src: 'escena-panel.jpg', alt: "Celes D'Andrea hablando en un panel sobre e-commerce", pos: '50% 35%' },
-  { src: 'escena-ecommerce.jpg', alt: "Celes D'Andrea presentando por qué crece el e-commerce", pos: '28% 30%' },
+  { src: 'escena-circle.jpg', alt: "Celes D'Andrea en el escenario de Tiendanube Circle", pos: '40% 25%' },
+  { src: 'escena-escenario.jpg', alt: "Celes D'Andrea en un escenario con pantallas gigantes", pos: '45% 50%' },
 ];
 
 export function Escena() {
