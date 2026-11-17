@@ -69,4 +69,5 @@ export const RECURSOS = [
 // formulario de contacto y el muro, y devuelve los mensajes del muro.
 // Mientras quede vacía: el contacto abre un correo prearmado y el muro no
 // muestra mensajes.
-export const FORMS_ENDPOINT = '';
+export const FORMS_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbwYmoaiOuZFBl7KpT90KDwgPYntMUPIFhugAB5EpS6zWWM7gYJlJhWalME6cHb1a9X-/exec';
