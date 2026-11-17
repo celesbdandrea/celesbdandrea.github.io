@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal, SplitTitle } from './motion.jsx';
 import { Arrow } from './Sections.jsx';
-import { CONTACT, CONTACT_ENDPOINT } from '../config.js';
+import { CONTACT, FORMS_ENDPOINT } from '../config.js';
+import { AvisoPrivacidad, AVISO_VERSION } from './Privacy.jsx';
 import { useToast } from './Toast.jsx';
 
 const ETAPAS = [
@@ -12,8 +13,6 @@ const ETAPAS = [
   'Ya tengo tienda y recién arranco',
 ];
 
-// Versión del aviso: se guarda con cada envío para saber qué texto aceptó cada persona.
-const AVISO_VERSION = '2026-11-17';
 
 const EMPTY = { nombre: '', email: '', etapa: '', duda: '', acepta: false, web: '' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -49,6 +48,7 @@ export default function Contact() {
     if (f.web) return;
 
     const data = {
+      tipo: 'contacto',
       nombre: f.nombre.trim(),
       email: f.email.trim(),
       etapa: f.etapa,
@@ -57,7 +57,7 @@ export default function Contact() {
       aviso: AVISO_VERSION,
     };
 
-    if (!CONTACT_ENDPOINT) {
+    if (!FORMS_ENDPOINT) {
       const body = `Hola Celes, soy ${data.nombre} (${data.email}).\nEtapa: ${data.etapa}\n\n${data.duda}`;
       window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         `Duda de ${data.nombre}`
@@ -68,7 +68,7 @@ export default function Contact() {
 
     setStatus('sending');
     try {
-      await fetch(CONTACT_ENDPOINT, {
+      await fetch(FORMS_ENDPOINT, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -174,7 +174,7 @@ export default function Contact() {
                   </p>
                   <details className="privacy__full">
                     <summary>Leer el aviso de privacidad completo</summary>
-                    <AvisoPrivacidad />
+                    <AvisoPrivacidad tipo="contacto" />
                   </details>
                   <label className="consent">
                     <input type="checkbox" name="acepta" checked={f.acepta} onChange={set('acepta')} aria-invalid={err('acepta') || undefined} />
@@ -211,47 +211,5 @@ export default function Contact() {
         </Reveal>
       </div>
     </section>
-  );
-}
-
-/** Aviso de privacidad (Ley 25.326 de Protección de los Datos Personales). */
-function AvisoPrivacidad() {
-  return (
-    <div className="privacy__body">
-      <p>
-        <strong>Responsable.</strong> Celeste D'Andrea, Buenos Aires, Argentina. Contacto:{' '}
-        <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
-      </p>
-      <p>
-        <strong>Qué datos y para qué.</strong> Tu nombre, tu email, la etapa de tu negocio y tu duda. Los
-        uso solo para responderte y, si lo pedís, para coordinar una asesoría. No los vendo, no los cedo
-        a terceros y no los uso para enviarte publicidad.
-      </p>
-      <p>
-        <strong>Dónde se guardan.</strong> En una planilla privada de Google a la que solo accedo yo.
-        Google LLC presta el servicio de almacenamiento.
-      </p>
-      <p>
-        <strong>Cuánto tiempo.</strong> Hasta 12 meses después de nuestra última conversación. Después
-        los borro.
-      </p>
-      <p>
-        <strong>Si son obligatorios.</strong> Sí, para poder responderte. Si no los completás, no puedo
-        recibir tu consulta.
-      </p>
-      <p>
-        <strong>Tus derechos.</strong> Podés pedirme acceso a tus datos, que los corrija o que los
-        borre, escribiendo a {CONTACT.email}. Como titular de los datos, podés ejercer el derecho de
-        acceso en forma gratuita a intervalos no inferiores a seis meses, salvo que acredites un interés
-        legítimo (art. 14, inc. 3, Ley 25.326).
-      </p>
-      <p>
-        La Agencia de Acceso a la Información Pública, en su carácter de Órgano de Control de la Ley N.º
-        25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten
-        afectados en sus derechos por incumplimiento de las normas vigentes en materia de protección de
-        datos personales.
-      </p>
-      <p className="privacy__ver">Versión del {AVISO_VERSION.split('-').reverse().join('/')}.</p>
-    </div>
   );
 }

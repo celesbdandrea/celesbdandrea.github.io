@@ -1,9 +1,7 @@
 import { ToastProvider } from './components/Toast.jsx';
 import { ScrollProgress, Nav, Hero, Aprende, Recursos, About, Footer } from './components/Sections.jsx';
+import Dolores from './components/Dolores.jsx';
 import Contact from './components/Contact.jsx';
-
-// Muro de dolores (src/components/Dolores.jsx): pausado hasta tener
-// moderación y mensajes reales de la comunidad.
 
 export default function App() {
   return (
@@ -15,6 +13,7 @@ export default function App() {
         <About />
         <Aprende />
         <Recursos />
+        <Dolores />
         <Contact />
       </main>
       <Footer />

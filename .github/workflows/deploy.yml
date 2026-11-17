@@ -3,13 +3,10 @@ name: Deploy a GitHub Pages
 on:
   push:
     branches: [main]
-  # Muro de dolores pausado. Para retomarlo, volvé a activar:
-  # schedule:
-  #   - cron: '0 12 1,16 * *'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -30,19 +27,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Actualizar muro de dolores
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        env:
-          DOLORES_FEED_URL: ${{ vars.DOLORES_FEED_URL }}
-        run: |
-          npm run update:dolores
-          if ! git diff --quiet public/data/dolores.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public/data/dolores.json
-            git commit -m "chore: actualizar muro de dolores"
-            git push
-          fi
 
       - run: npm run build
 

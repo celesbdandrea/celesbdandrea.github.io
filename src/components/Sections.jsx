@@ -9,7 +9,7 @@ import {
   useReducedMotion,
 } from 'framer-motion';
 import { Reveal, Stagger, SplitTitle, Magnetic, TiltCard } from './motion.jsx';
-import { LINKS, CONTACT, PILARES, RECURSOS } from '../config.js';
+import { LINKS, CONTACT, PILARES, RECURSOS, FORMS_ENDPOINT } from '../config.js';
 
 export function Arrow() {
   return (
@@ -21,6 +21,7 @@ export function Arrow() {
 
 const img = (f) => `${import.meta.env.BASE_URL}img/${f}`;
 const RECURSOS_LISTOS = RECURSOS.filter((r) => r.url);
+const MURO_ACTIVO = Boolean(FORMS_ENDPOINT) || import.meta.env.DEV;
 
 /* ───────────────────────── Barra de progreso ───────────────────────── */
 export function ScrollProgress() {
@@ -34,6 +35,7 @@ const NAV = [
   ['#sobre-mi', 'Sobre mí'],
   ['#aprende', 'Aprendé'],
   ...(RECURSOS_LISTOS.length ? [['#recursos', 'Recursos']] : []),
+  ...(MURO_ACTIVO ? [['#muro', 'Muro']] : []),
   ['#contacto', 'Contacto'],
 ];
 

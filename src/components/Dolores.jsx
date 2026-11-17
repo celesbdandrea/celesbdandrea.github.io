@@ -1,82 +1,136 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Reveal, SplitTitle, Magnetic } from './motion.jsx';
-import { DOLORES_ENDPOINT, CONTACT } from '../config.js';
+import { Reveal, SplitTitle } from './motion.jsx';
+import { Arrow } from './Sections.jsx';
+import { FORMS_ENDPOINT } from '../config.js';
 import { useToast } from './Toast.jsx';
+import { AvisoPrivacidad, AVISO_VERSION } from './Privacy.jsx';
 
 const MAX = 280;
-const RUBROS = ['Indumentaria', 'Deco & hogar', 'Belleza', 'Alimentos', 'Accesorios', 'Servicios', 'Otro'];
-const TINTS = ['tint-a', 'tint-b', 'tint-c', 'tint-d'];
+const VISIBLES = 9;
+const TINTS = ['tint-a', 'tint-b', 'tint-c'];
+const EMPTY = { nombre: '', tienda: '', desafio: '', acepta: false, web: '' };
 
-function formatDate(iso) {
-  if (!iso) return '';
+// El muro se muestra cuando está conectado a la planilla. En `npm run dev`
+// sin conexión, muestra mensajes de ejemplo marcados como tales.
+export const MURO_ACTIVO = Boolean(FORMS_ENDPOINT) || import.meta.env.DEV;
+const DEMO = import.meta.env.DEV && !FORMS_ENDPOINT;
+const DEMO_ITEMS = [
+  { id: 'd1', nombre: 'Martina', tienda: 'Lino & Barro', desafio: 'Tengo visitas en la tienda pero casi nadie termina comprando.', fecha: new Date(Date.now() - 36e5).toISOString() },
+  { id: 'd2', nombre: 'Julián', tienda: '@mates.delsur', desafio: 'No sé cómo calcular el precio con el envío incluido.', fecha: new Date(Date.now() - 864e5).toISOString() },
+  { id: 'd3', nombre: 'Sofi', tienda: 'Sofi Bijou', desafio: 'Vendo por Instagram y quiero pasar a una tienda online, pero no sé por dónde empezar.', fecha: new Date(Date.now() - 3 * 864e5).toISOString() },
+  { id: 'd4', nombre: 'Romina', tienda: 'Almacén Doña Rosa', desafio: 'Tengo un local y quiero empezar a vender online sin descuidar el mostrador.', fecha: new Date(Date.now() - 5 * 864e5).toISOString() },
+];
+
+const rtf = new Intl.RelativeTimeFormat('es-AR', { numeric: 'auto' });
+function haceCuanto(iso) {
+  const min = Math.round((new Date(iso) - Date.now()) / 60000);
+  if (Math.abs(min) < 60) return rtf.format(Math.min(min, -1), 'minute');
+  const h = Math.round(min / 60);
+  if (Math.abs(h) < 24) return rtf.format(h, 'hour');
+  const d = Math.round(h / 24);
+  if (Math.abs(d) < 30) return rtf.format(d, 'day');
   return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
 }
 
-function daysUntil(iso) {
-  if (!iso) return null;
-  const d = Math.ceil((new Date(iso) - new Date()) / 86400000);
-  return Math.max(0, d);
-}
-
 export default function Dolores() {
-  const [data, setData] = useState({ items: [] });
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ nombre: '', rubro: '', dolor: '' });
-  const [status, setStatus] = useState('idle'); // idle | sending | sent
+  const [items, setItems] = useState([]);
+  const [estado, setEstado] = useState('cargando'); // cargando | listo | error
   const [mine, setMine] = useState(null);
+  const [verTodos, setVerTodos] = useState(false);
+  const [f, setF] = useState(EMPTY);
+  const [touched, setTouched] = useState(false);
+  const [status, setStatus] = useState('idle'); // idle | sending | sent
   const toast = useToast();
 
-  useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/dolores.json`, { cache: 'no-cache' })
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData({ items: [] }))
-      .finally(() => setLoading(false));
+  const cargar = useCallback(async () => {
+    if (DEMO) {
+      setItems(DEMO_ITEMS);
+      setEstado('listo');
+      return;
+    }
+    try {
+      const r = await fetch(FORMS_ENDPOINT, { cache: 'no-store' });
+      const body = await r.json();
+      setItems(Array.isArray(body.items) ? body.items : []);
+      setEstado('listo');
+    } catch {
+      setEstado((e) => (e === 'listo' ? e : 'error'));
+    }
   }, []);
 
-  const remaining = daysUntil(data.nextUpdate);
-  const left = MAX - form.dolor.length;
-  const valid = form.dolor.trim().length >= 10;
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  const errors = {
+    nombre: !f.nombre.trim(),
+    tienda: !f.tienda.trim(),
+    desafio: f.desafio.trim().length < 10,
+    acepta: !f.acepta,
+  };
+  const err = (k) => touched && errors[k];
+  const left = MAX - f.desafio.length;
 
   async function submit(e) {
     e.preventDefault();
-    if (!valid) {
-      toast('Contame un poco más: mínimo 10 caracteres.', 'warn');
+    setTouched(true);
+    if (Object.values(errors).some(Boolean)) {
+      toast(
+        errors.desafio && f.desafio.trim()
+          ? 'Contame un poco más: mínimo 10 caracteres.'
+          : errors.acepta && !errors.nombre && !errors.tienda && !errors.desafio
+            ? 'Para publicarlo, aceptá que se muestre en el muro.'
+            : 'Revisá los campos marcados.',
+        'warn'
+      );
       return;
     }
-    setStatus('sending');
-    const payload = {
-      nombre: form.nombre.trim().slice(0, 40),
-      rubro: form.rubro,
-      dolor: form.dolor.trim().slice(0, MAX),
+    if (f.web) return;
+
+    const data = {
+      tipo: 'muro',
+      nombre: f.nombre.trim().slice(0, 40),
+      tienda: f.tienda.trim().slice(0, 40),
+      desafio: f.desafio.trim().slice(0, MAX),
+      consentimiento: true,
+      aviso: AVISO_VERSION,
     };
+    setStatus('sending');
     try {
-      if (DOLORES_ENDPOINT) {
-        // Apps Script no admite CORS preflight: se envía como text/plain y sin leer la respuesta.
-        await fetch(DOLORES_ENDPOINT, {
+      if (!DEMO) {
+        // Apps Script no admite el preflight de CORS: se envía como text/plain sin leer la respuesta.
+        await fetch(FORMS_ENDPOINT, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(data),
         });
-      } else {
-        const body = `Rubro: ${payload.rubro || '-'}\nNombre: ${payload.nombre || 'Anónimo'}\n\n${payload.dolor}`;
-        window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
-          'Mi principal dolor con mi negocio online'
-        )}&body=${encodeURIComponent(body)}`;
       }
-      setMine({ id: 'mine', text: payload.dolor, rubro: payload.rubro, nombre: payload.nombre, mine: true });
+      setMine({ id: 'mine', nombre: data.nombre, tienda: data.tienda, desafio: data.desafio, fecha: new Date().toISOString(), mine: true });
       setStatus('sent');
-      setForm({ nombre: '', rubro: '', dolor: '' });
-      toast('Gracias, tu mensaje llegó.', 'ok');
+      setF(EMPTY);
+      setTouched(false);
+      toast('Listo, tu mensaje ya está en el muro.', 'ok');
+      if (!DEMO) setTimeout(cargar, 2500);
     } catch {
       setStatus('idle');
-      toast('Ups, no se pudo enviar. Probá de nuevo en un ratito.', 'error');
+      toast('No se pudo enviar. Probá de nuevo en un rato.', 'error');
     }
   }
 
-  const items = useMemo(() => (mine ? [mine, ...data.items] : data.items), [mine, data.items]);
+  // Si el mensaje propio ya volvió de la planilla, se muestra una sola vez.
+  const todos = useMemo(() => {
+    if (!mine) return items;
+    const yaEsta = items.some((m) => m.nombre === mine.nombre && m.desafio === mine.desafio);
+    return yaEsta
+      ? items.map((m) => (m.nombre === mine.nombre && m.desafio === mine.desafio ? { ...m, mine: true } : m))
+      : [mine, ...items];
+  }, [mine, items]);
+  const visibles = verTodos ? todos : todos.slice(0, VISIBLES);
+
+  if (!MURO_ACTIVO) return null;
 
   return (
     <section className="dolores" id="muro">
@@ -84,11 +138,11 @@ export default function Dolores() {
         <Reveal as="p" className="eyebrow">
           Muro de la comunidad
         </Reveal>
-        <SplitTitle className="display display--dark" text="¿Qué te quita el *sueño?*" />
+        <SplitTitle className="display display--dark" text="¿Cuál es tu principal *desafío?*" />
         <Reveal delay={0.2}>
           <p className="mono-p center">
-            Dejame tu principal dolor con tu negocio online. Los mensajes aparecen en este muro (de forma
-            anónima si querés) y se renuevan cada 15 días. Con ellos armo los próximos contenidos.
+            Contá qué es lo que más te cuesta hoy con tu negocio online. Tu mensaje aparece en el muro al
+            instante y me ayuda a elegir los próximos temas.
           </p>
         </Reveal>
       </div>
@@ -97,134 +151,125 @@ export default function Dolores() {
         <Reveal className="dolores__form-wrap" y={30}>
           <AnimatePresence mode="wait">
             {status === 'sent' ? (
-              <motion.div
-                key="thanks"
-                className="thanks"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <motion.svg viewBox="0 0 52 52" className="check">
-                  <motion.circle cx="26" cy="26" r="24" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.6 }} />
-                  <motion.path d="M14 27 l8 8 l16 -18" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: 0.5 }} />
-                </motion.svg>
+              <motion.div key="ok" className="thanks" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="status">
+                <svg className="check" viewBox="0 0 56 56" aria-hidden>
+                  <circle cx="28" cy="28" r="26" />
+                  <path d="M17 29l7 7 15-16" />
+                </svg>
                 <h3>
                   ¡Gracias por <span className="it">compartirlo!</span>
                 </h3>
-                <p>
-                  {DOLORES_ENDPOINT
-                    ? `Tu mensaje se suma al muro en la próxima actualización${
-                        data.nextUpdate ? ` (${formatDate(data.nextUpdate)})` : ''
-                      }.`
-                    : 'Se abrió tu correo con el mensaje listo para enviar.'}
-                </p>
-                <button className="btn btn--outline" onClick={() => setStatus('idle')}>
-                  Dejar otro mensaje
+                <p>Tu mensaje ya está en el muro.</p>
+                <button type="button" className="cta" onClick={() => setStatus('idle')}>
+                  Sumar otro mensaje
                 </button>
               </motion.div>
             ) : (
-              <motion.form key="form" className="dolor-form" onSubmit={submit} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <label className="field">
-                  <span>Tu nombre (opcional)</span>
-                  <input
-                    value={form.nombre}
-                    maxLength={40}
-                    placeholder="Anónimo"
-                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  />
+              <motion.form key="form" noValidate onSubmit={submit} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <label className={`field ${err('nombre') ? 'has-error' : ''}`}>
+                  <span>Tu nombre *</span>
+                  <input name="nombre" autoComplete="given-name" maxLength={40} value={f.nombre} onChange={set('nombre')} aria-invalid={err('nombre') || undefined} />
                 </label>
-                <div className="field">
-                  <span>Rubro</span>
-                  <div className="chips">
-                    {RUBROS.map((r) => (
-                      <motion.button
-                        type="button"
-                        key={r}
-                        className={`chip chip--select ${form.rubro === r ? 'is-on' : ''}`}
-                        onClick={() => setForm({ ...form, rubro: form.rubro === r ? '' : r })}
-                        whileTap={{ scale: 0.9 }}
-                        whileHover={{ y: -2 }}
-                        aria-pressed={form.rubro === r}
-                      >
-                        {r}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-                <label className="field">
-                  <span>Tu principal dolor</span>
+                <label className={`field ${err('tienda') ? 'has-error' : ''}`}>
+                  <span>Tu tienda *</span>
+                  <input name="tienda" maxLength={40} value={f.tienda} onChange={set('tienda')} placeholder="Nombre o @ de Instagram" aria-invalid={err('tienda') || undefined} />
+                </label>
+                <label className={`field ${err('desafio') ? 'has-error' : ''}`}>
+                  <span>Tu principal desafío *</span>
                   <textarea
+                    name="desafio"
                     rows={4}
                     maxLength={MAX}
-                    value={form.dolor}
-                    placeholder="Ej: tengo visitas pero nadie compra…"
-                    onChange={(e) => setForm({ ...form, dolor: e.target.value })}
+                    value={f.desafio}
+                    onChange={set('desafio')}
+                    placeholder="Ej: tengo visitas pero casi nadie compra."
+                    aria-invalid={err('desafio') || undefined}
                   />
                   <div className="meter">
                     <motion.div
                       className="meter__bar"
-                      animate={{
-                        width: `${(form.dolor.length / MAX) * 100}%`,
-                        backgroundColor: left < 30 ? '#550b14' : '#7e6961',
-                      }}
+                      animate={{ width: `${(f.desafio.length / MAX) * 100}%`, backgroundColor: left < 30 ? '#550b14' : '#7e6961' }}
                     />
-                    <motion.small key={left < 30} animate={{ scale: left < 30 ? [1, 1.2, 1] : 1 }} className={left < 30 ? 'warn' : ''}>
-                      {left}
-                    </motion.small>
+                    <small className={left < 30 ? 'warn' : ''}>{left}</small>
                   </div>
                 </label>
-                <Magnetic as="button" type="submit" className="btn btn--primary btn--block" disabled={status === 'sending'} strength={0.15}>
-                  {status === 'sending' ? <span className="spinner" /> : 'Sumar mi mensaje al muro'}
-                </Magnetic>
-                <p className="fineprint">No publiques datos personales. Los mensajes se moderan antes de aparecer.</p>
+
+                <label className="hp" aria-hidden>
+                  No completar
+                  <input name="web" tabIndex={-1} autoComplete="off" value={f.web} onChange={set('web')} />
+                </label>
+
+                <div className={`privacy privacy--light ${err('acepta') ? 'has-error' : ''}`}>
+                  <p className="privacy__short">
+                    Tu nombre, tu tienda y tu mensaje se publican en este muro. No pongas datos de contacto.
+                    Si querés que lo borre, escribime.
+                  </p>
+                  <details className="privacy__full">
+                    <summary>Leer el aviso de privacidad completo</summary>
+                    <AvisoPrivacidad tipo="muro" />
+                  </details>
+                  <label className="consent">
+                    <input type="checkbox" name="acepta" checked={f.acepta} onChange={set('acepta')} aria-invalid={err('acepta') || undefined} />
+                    <span>Acepto que mi nombre, mi tienda y mi mensaje se publiquen en este muro. *</span>
+                  </label>
+                </div>
+
+                <button type="submit" className="btn btn--primary btn--block" disabled={status === 'sending'} data-cta="muro-enviar">
+                  {status === 'sending' ? <span className="spinner" aria-label="Enviando" /> : <>Publicar en el muro <Arrow /></>}
+                </button>
               </motion.form>
             )}
           </AnimatePresence>
         </Reveal>
 
-        <div className="dolores__wall">
-          <div className="wall-meta">
-            <span>
-              <span className="live-dot" /> {data.items.length} mensajes en el muro
-            </span>
-            {remaining !== null && (
-              <span>
-                Próxima actualización: <strong>{remaining === 0 ? 'hoy' : `en ${remaining} días`}</strong>
-              </span>
-            )}
-          </div>
-          {loading ? (
+        <div className="dolores__wall" aria-live="polite">
+          {DEMO && <p className="demo-badge">Vista de ejemplo: solo se ve en tu compu hasta conectar la planilla.</p>}
+          {estado === 'listo' && todos.length > 0 && (
+            <p className="wall-meta">
+              <span className="live-dot" /> {todos.length} {todos.length === 1 ? 'mensaje' : 'mensajes'} en el muro
+            </p>
+          )}
+          {estado === 'cargando' ? (
             <div className="wall-grid">
               {[0, 1, 2, 3].map((i) => (
                 <div className="note note--skeleton" key={i} />
               ))}
             </div>
+          ) : estado === 'error' && !todos.length ? (
+            <p className="wall-empty">No pude cargar el muro. Probá recargar la página.</p>
+          ) : !todos.length ? (
+            <p className="wall-empty">
+              Todavía no hay mensajes. Contá tu desafío y <span className="it">abrí el muro.</span>
+            </p>
           ) : (
             <motion.div className="wall-grid" layout>
-              <AnimatePresence>
-                {items.map((m, i) => (
+              <AnimatePresence initial={false}>
+                {visibles.map((m, i) => (
                   <motion.figure
                     layout
                     key={m.id}
                     className={`note ${TINTS[i % TINTS.length]} ${m.mine ? 'note--mine' : ''}`}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-40px' }}
-                    transition={{ type: 'spring', stiffness: 90, damping: 14, delay: (i % 4) * 0.08 }}
-                    whileHover={{ y: -4, zIndex: 2 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 90, damping: 16, delay: Math.min(i, 6) * 0.05 }}
                   >
-                    {m.mine && <span className="note__badge">tu mensaje · en revisión</span>}
-                    <blockquote>“{m.text}”</blockquote>
+                    {m.mine && <span className="note__badge">Tu mensaje</span>}
+                    <blockquote>{m.desafio}</blockquote>
                     <figcaption>
-                      — {m.nombre || 'Anónimo'}
-                      {m.rubro ? <span> · {m.rubro}</span> : null}
+                      <strong>{m.nombre}</strong>
+                      <span className="note__tienda">{m.tienda}</span>
+                      {m.fecha && <time dateTime={m.fecha}>{haceCuanto(m.fecha)}</time>}
                     </figcaption>
                   </motion.figure>
                 ))}
               </AnimatePresence>
             </motion.div>
           )}
-          {data.updatedAt && <p className="fineprint right">Actualizado el {formatDate(data.updatedAt)}</p>}
+          {todos.length > VISIBLES && !verTodos && (
+            <button type="button" className="cta wall-more" onClick={() => setVerTodos(true)}>
+              Ver todos los mensajes
+            </button>
+          )}
         </div>
       </div>
     </section>

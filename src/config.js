@@ -65,10 +65,8 @@ export const RECURSOS = [
   },
 ];
 
-// URL del Web App de Google Apps Script que recibe el formulario de contacto
-// (ver apps-script/Contacto.gs y README). Mientras quede vacía, el formulario
-// abre un correo prearmado con los datos.
-export const CONTACT_ENDPOINT = '';
-
-// Muro de dolores: pausado por ahora (ver README). Se conserva para retomarlo.
-export const DOLORES_ENDPOINT = '';
+// URL del Web App de Google Apps Script (apps-script/Code.gs). Recibe el
+// formulario de contacto y el muro, y devuelve los mensajes del muro.
+// Mientras quede vacía: el contacto abre un correo prearmado y el muro no
+// muestra mensajes.
+export const FORMS_ENDPOINT = '';
