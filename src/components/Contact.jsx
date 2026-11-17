@@ -1,68 +1,87 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Reveal, SplitTitle, Magnetic } from './motion.jsx';
-import { CONTACT } from '../config.js';
+import { Reveal, SplitTitle } from './motion.jsx';
+import { Arrow } from './Sections.jsx';
+import { CONTACT, CONTACT_ENDPOINT } from '../config.js';
 import { useToast } from './Toast.jsx';
 
-const MOTIVOS = [
-  { id: 'asesoria', label: 'Quiero asesorarme', intro: 'me gustaría recibir una asesoría para mi negocio online' },
-  { id: 'escalar', label: 'Necesito escalar mi negocio', intro: 'necesito ayuda para escalar mi negocio' },
-  { id: 'paso', label: 'No sé cuál es mi próximo paso', intro: 'no sé cuál es el próximo paso para mi negocio' },
-  { id: 'auditoria', label: 'Quiero auditar mi negocio', intro: 'quiero hacer una auditoría de mi negocio' },
+const ETAPAS = [
+  'Tengo una idea, todavía no vendo',
+  'Vendo en un local o por redes',
+  'Estoy armando mi tienda online',
+  'Ya tengo tienda y recién arranco',
 ];
 
+// Versión del aviso: se guarda con cada envío para saber qué texto aceptó cada persona.
+const AVISO_VERSION = '2026-11-17';
+
+const EMPTY = { nombre: '', email: '', etapa: '', duda: '', acepta: false, web: '' };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 export default function Contact() {
-  const [motivo, setMotivo] = useState('asesoria');
-  const [f, setF] = useState({ nombre: '', negocio: '', web: '', mensaje: '' });
+  const [f, setF] = useState(EMPTY);
   const [touched, setTouched] = useState(false);
+  const [status, setStatus] = useState('idle'); // idle | sending | sent
   const toast = useToast();
 
-  const m = MOTIVOS.find((x) => x.id === motivo);
-  const missing = !f.nombre.trim() || !f.mensaje.trim();
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
-  const text = useMemo(() => {
-    const lines = [
-      `¡Hola Celes! Soy ${f.nombre.trim() || '[tu nombre]'}${f.negocio.trim() ? `, de ${f.negocio.trim()}` : ''}.`,
-      `Te escribo porque ${m.intro}.`,
-      '',
-      f.mensaje.trim() || '[contame un poco sobre tu situación]',
-    ];
-    if (f.web.trim()) lines.push('', `Mi tienda: ${f.web.trim()}`);
-    return lines.join('\n');
-  }, [f, m]);
+  const errors = {
+    nombre: !f.nombre.trim(),
+    email: !EMAIL_RE.test(f.email.trim()),
+    etapa: !f.etapa,
+    duda: f.duda.trim().length < 10,
+    acepta: !f.acepta,
+  };
+  const invalid = Object.values(errors).some(Boolean);
+  const err = (k) => touched && errors[k];
 
-  function guard() {
+  async function onSubmit(e) {
+    e.preventDefault();
     setTouched(true);
-    if (missing) {
-      toast('Completá tu nombre y tu mensaje para enviarlo.', 'warn');
-      return false;
+    if (invalid) {
+      toast(errors.acepta && !errors.nombre && !errors.email && !errors.etapa && !errors.duda
+        ? 'Para enviarlo, aceptá el aviso de privacidad.'
+        : 'Revisá los campos marcados.', 'warn');
+      return;
     }
-    return true;
-  }
+    // Campo trampa para bots: una persona no lo ve ni lo completa.
+    if (f.web) return;
 
-  function sendWhatsApp() {
-    if (!guard()) return;
-    window.open(`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-    toast('Abriendo WhatsApp con tu mensaje listo.', 'ok');
-  }
+    const data = {
+      nombre: f.nombre.trim(),
+      email: f.email.trim(),
+      etapa: f.etapa,
+      duda: f.duda.trim(),
+      consentimiento: true,
+      aviso: AVISO_VERSION,
+    };
 
-  function sendEmail() {
-    if (!guard()) return;
-    const subject = `${m.label} — ${f.negocio.trim() || f.nombre.trim()}`;
-    window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    toast('Abriendo tu correo con el mensaje listo.', 'ok');
-  }
+    if (!CONTACT_ENDPOINT) {
+      const body = `Hola Celes, soy ${data.nombre} (${data.email}).\nEtapa: ${data.etapa}\n\n${data.duda}`;
+      window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
+        `Duda de ${data.nombre}`
+      )}&body=${encodeURIComponent(body)}`;
+      toast('Abriendo tu correo con el mensaje listo.', 'ok');
+      return;
+    }
 
-  async function copy() {
+    setStatus('sending');
     try {
-      await navigator.clipboard.writeText(text);
-      toast('Mensaje copiado al portapapeles.', 'ok');
+      await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data),
+      });
+      setStatus('sent');
+      setF(EMPTY);
+      setTouched(false);
     } catch {
-      toast('No se pudo copiar, seleccionalo a mano.', 'error');
+      setStatus('idle');
+      toast('No se pudo enviar. Probá de nuevo o escribime por Instagram.', 'error');
     }
   }
-
-  const err = (k) => touched && !f[k].trim();
 
   return (
     <section className="contact" id="contacto">
@@ -70,121 +89,169 @@ export default function Contact() {
         <Reveal as="p" className="eyebrow eyebrow--light">
           Contacto
         </Reveal>
-        <SplitTitle className="display display--light" text="Demos el próximo *paso*" />
+        <SplitTitle className="display display--light" text="Compartí tus *dudas* conmigo" />
         <Reveal delay={0.2}>
           <p className="mono-p mono-p--light center">
-            Elegí qué necesitás, completá tus datos y te armo el mensaje listo para enviarme por
-            WhatsApp o por correo.
+            Contame en qué etapa está tu negocio y qué te está frenando. Te respondo por email.
           </p>
         </Reveal>
       </div>
 
       <div className="contact__layout">
         <Reveal className="contact__form" y={30}>
-          <div className="field">
-            <span>¿En qué te puedo ayudar?</span>
-            <div className="motivos">
-              {MOTIVOS.map((x) => (
-                <motion.button
-                  key={x.id}
-                  type="button"
-                  className={`motivo ${motivo === x.id ? 'is-on' : ''}`}
-                  onClick={() => setMotivo(x.id)}
-                  whileHover={{ y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-pressed={motivo === x.id}
-                >
-                  {motivo === x.id && (
-                    <motion.span layoutId="motivo-bg" className="motivo__bg" transition={{ type: 'spring', stiffness: 300, damping: 28 }} />
-                  )}
-                  <span className="motivo__label">{x.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-          <div className="row">
-            <label className={`field ${err('nombre') ? 'has-error' : ''}`}>
-              <span>Tu nombre *</span>
-              <input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} placeholder="Ej: Martina" />
-            </label>
-            <label className="field">
-              <span>Tu negocio</span>
-              <input value={f.negocio} onChange={(e) => setF({ ...f, negocio: e.target.value })} placeholder="Ej: Martina Deco" />
-            </label>
-          </div>
-          <label className="field">
-            <span>Link de tu tienda o Instagram</span>
-            <input value={f.web} onChange={(e) => setF({ ...f, web: e.target.value })} placeholder="www.tutienda.com" />
-          </label>
-          <label className={`field ${err('mensaje') ? 'has-error' : ''}`}>
-            <span>Contame tu situación *</span>
-            <textarea
-              rows={4}
-              value={f.mensaje}
-              onChange={(e) => setF({ ...f, mensaje: e.target.value })}
-              placeholder="¿Qué vendés, hace cuánto, qué te gustaría lograr?"
-            />
-          </label>
-          <div className="contact__buttons">
-            <Magnetic as="button" type="button" className="btn btn--primary-inv" onClick={sendWhatsApp} strength={0.2}>
-              <WaIcon /> Enviar por WhatsApp
-            </Magnetic>
-            <Magnetic as="button" type="button" className="btn btn--outline" onClick={sendEmail} strength={0.2}>
-              Enviar por correo
-            </Magnetic>
-          </div>
+          <AnimatePresence mode="wait">
+            {status === 'sent' ? (
+              <motion.div
+                key="ok"
+                className="thanks"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                role="status"
+              >
+                <svg className="check" viewBox="0 0 56 56" aria-hidden>
+                  <circle cx="28" cy="28" r="26" />
+                  <path d="M17 29l7 7 15-16" />
+                </svg>
+                <h3>
+                  ¡Gracias! Ya tengo <span className="it">tu duda.</span>
+                </h3>
+                <p>Te respondo por email en los próximos días.</p>
+                <button type="button" className="cta" onClick={() => setStatus('idle')}>
+                  Enviar otra
+                </button>
+              </motion.div>
+            ) : (
+              <motion.form key="form" noValidate onSubmit={onSubmit} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="row">
+                  <label className={`field ${err('nombre') ? 'has-error' : ''}`}>
+                    <span>Tu nombre *</span>
+                    <input name="nombre" autoComplete="given-name" maxLength={60} value={f.nombre} onChange={set('nombre')} aria-invalid={err('nombre') || undefined} />
+                  </label>
+                  <label className={`field ${err('email') ? 'has-error' : ''}`}>
+                    <span>Tu email *</span>
+                    <input name="email" type="email" inputMode="email" autoComplete="email" maxLength={120} value={f.email} onChange={set('email')} aria-invalid={err('email') || undefined} />
+                    {err('email') && f.email && <small className="field__msg">Revisá que el email esté bien escrito.</small>}
+                  </label>
+                </div>
+
+                <fieldset className={`field etapas ${err('etapa') ? 'has-error' : ''}`}>
+                  <legend>
+                    <span>¿En qué etapa está tu negocio? *</span>
+                  </legend>
+                  <div className="etapas__opts">
+                    {ETAPAS.map((t) => (
+                      <label key={t} className={`etapa ${f.etapa === t ? 'is-on' : ''}`}>
+                        <input type="radio" name="etapa" value={t} checked={f.etapa === t} onChange={set('etapa')} />
+                        {t}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <label className={`field ${err('duda') ? 'has-error' : ''}`}>
+                  <span>¿Cuál es tu duda principal? *</span>
+                  <textarea
+                    name="duda"
+                    rows={4}
+                    maxLength={1000}
+                    value={f.duda}
+                    onChange={set('duda')}
+                    placeholder="Ej: vendo por Instagram y no sé si me conviene abrir una tienda online."
+                    aria-invalid={err('duda') || undefined}
+                  />
+                </label>
+
+                <label className="hp" aria-hidden>
+                  No completar
+                  <input name="web" tabIndex={-1} autoComplete="off" value={f.web} onChange={set('web')} />
+                </label>
+
+                <div className={`privacy ${err('acepta') ? 'has-error' : ''}`}>
+                  <p className="privacy__short">
+                    Uso tus datos solo para responder tu consulta. No los comparto ni los uso para enviarte
+                    publicidad. Podés pedirme que los corrija o los borre cuando quieras.
+                  </p>
+                  <details className="privacy__full">
+                    <summary>Leer el aviso de privacidad completo</summary>
+                    <AvisoPrivacidad />
+                  </details>
+                  <label className="consent">
+                    <input type="checkbox" name="acepta" checked={f.acepta} onChange={set('acepta')} aria-invalid={err('acepta') || undefined} />
+                    <span>Leí el aviso de privacidad y acepto que uses mis datos para responder mi consulta. *</span>
+                  </label>
+                </div>
+
+                <button type="submit" className="btn btn--primary-inv btn--block" disabled={status === 'sending'} data-cta="form-enviar">
+                  {status === 'sending' ? <span className="spinner spinner--dark" aria-label="Enviando" /> : <>Enviar mi duda <Arrow /></>}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
         </Reveal>
 
-        <Reveal className="preview" delay={0.2} x={40} y={0}>
-          <div className="preview__head">
-            <span className="preview__avatar">CD</span>
-            <div>
-              <strong>Celes D'Andrea</strong>
-              <small>
-                <span className="live-dot" /> suele responder en el día
-              </small>
-            </div>
+        <Reveal className="contact__aside" delay={0.2} x={40} y={0}>
+          <p className="eyebrow eyebrow--light">Asesoría 1:1</p>
+          <p className="contact__aside-title">
+            Si necesitás acompañamiento personalizado, <span className="it">escribime.</span>
+          </p>
+          <p className="mono-p mono-p--light">
+            Contalo en tu duda y te cuento cómo podemos trabajar juntos.
+          </p>
+          <span className="contact__rule" aria-hidden />
+          <p className="mono-p mono-p--light">¿Preferís escribirme directo?</p>
+          <div className="contact__direct">
+            <a href={`mailto:${CONTACT.email}`} className="link" data-cta="contacto-email">
+              {CONTACT.email}
+            </a>
+            <a href={CONTACT.instagram} target="_blank" rel="noreferrer" className="pill" data-cta="contacto-instagram">
+              Escribime por Instagram <Arrow />
+            </a>
           </div>
-          <div className="preview__body">
-            <p className="preview__hint">Así se va a ver tu mensaje:</p>
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                key={motivo}
-                className="bubble"
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-              >
-                {text}
-                <span className="bubble__time">
-                  {new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} ✓✓
-                </span>
-              </motion.div>
-            </AnimatePresence>
-            <AnimatePresence>
-              {!missing && (
-                <motion.div className="typing" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  {[0, 1, 2].map((i) => (
-                    <motion.span key={i} animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.15 }} />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <button type="button" className="preview__copy" onClick={copy}>
-            Copiar mensaje
-          </button>
         </Reveal>
       </div>
     </section>
   );
 }
 
-function WaIcon() {
+/** Aviso de privacidad (Ley 25.326 de Protección de los Datos Personales). */
+function AvisoPrivacidad() {
   return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden>
-      <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z" />
-    </svg>
+    <div className="privacy__body">
+      <p>
+        <strong>Responsable.</strong> Celeste D'Andrea, Buenos Aires, Argentina. Contacto:{' '}
+        <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+      </p>
+      <p>
+        <strong>Qué datos y para qué.</strong> Tu nombre, tu email, la etapa de tu negocio y tu duda. Los
+        uso solo para responderte y, si lo pedís, para coordinar una asesoría. No los vendo, no los cedo
+        a terceros y no los uso para enviarte publicidad.
+      </p>
+      <p>
+        <strong>Dónde se guardan.</strong> En una planilla privada de Google a la que solo accedo yo.
+        Google LLC presta el servicio de almacenamiento.
+      </p>
+      <p>
+        <strong>Cuánto tiempo.</strong> Hasta 12 meses después de nuestra última conversación. Después
+        los borro.
+      </p>
+      <p>
+        <strong>Si son obligatorios.</strong> Sí, para poder responderte. Si no los completás, no puedo
+        recibir tu consulta.
+      </p>
+      <p>
+        <strong>Tus derechos.</strong> Podés pedirme acceso a tus datos, que los corrija o que los
+        borre, escribiendo a {CONTACT.email}. Como titular de los datos, podés ejercer el derecho de
+        acceso en forma gratuita a intervalos no inferiores a seis meses, salvo que acredites un interés
+        legítimo (art. 14, inc. 3, Ley 25.326).
+      </p>
+      <p>
+        La Agencia de Acceso a la Información Pública, en su carácter de Órgano de Control de la Ley N.º
+        25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten
+        afectados en sus derechos por incumplimiento de las normas vigentes en materia de protección de
+        datos personales.
+      </p>
+      <p className="privacy__ver">Versión del {AVISO_VERSION.split('-').reverse().join('/')}.</p>
+    </div>
   );
 }

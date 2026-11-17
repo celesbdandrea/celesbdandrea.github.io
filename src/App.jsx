@@ -1,20 +1,9 @@
 import { ToastProvider } from './components/Toast.jsx';
-import {
-  ScrollProgress,
-  Nav,
-  Hero,
-  Manifesto,
-  Marquee,
-  About,
-  Escena,
-  Credentials,
-  Services,
-  Entrenamiento,
-  Process,
-  Footer,
-} from './components/Sections.jsx';
-import Dolores from './components/Dolores.jsx';
+import { ScrollProgress, Nav, Hero, Aprende, Recursos, About, Footer } from './components/Sections.jsx';
 import Contact from './components/Contact.jsx';
+
+// Muro de dolores (src/components/Dolores.jsx): pausado hasta tener
+// moderación y mensajes reales de la comunidad.
 
 export default function App() {
   return (
@@ -23,20 +12,9 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
-        <Manifesto />
-        <Marquee items={['e-Commerce', 'Tiendanube', 'Estrategia', 'Ventas online', 'Marketing digital', 'Paso a paso']} />
         <About />
-        <Escena />
-        <Credentials />
-        <Services />
-        <Entrenamiento />
-        <Process />
-        <Marquee
-          reverse
-          variant="marquee--bordo"
-          items={['Tu próximo paso', 'Vender más', 'Crecer con claridad', 'Escalar', 'Comunidad']}
-        />
-        <Dolores />
+        <Aprende />
+        <Recursos />
         <Contact />
       </main>
       <Footer />

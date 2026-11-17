@@ -14,9 +14,11 @@ npm run build    # genera /dist
 
 | Qué | Dónde |
 | --- | --- |
-| WhatsApp, email, redes | `src/config.js` → `CONTACT` |
-| Links de Entrenamiento Nube | `src/config.js` → `LINKS` |
+| Email y redes (TikTok aparece cuando completás el link) | `src/config.js` → `CONTACT` |
+| Los 4 pilares y el link "Ver videos" de cada uno | `src/config.js` → `PILARES` |
+| Recursos descargables (el bloque aparece cuando un recurso tiene `url`) | `src/config.js` → `RECURSOS` |
 | Textos de cada sección | `src/components/Sections.jsx` |
+| Formulario y aviso de privacidad | `src/components/Contact.jsx` |
 | Colores y tipografías | `src/styles.css` (variables en `:root`) |
 | Foto | `public/img/celes-hero.jpg` |
 
@@ -40,7 +42,26 @@ Si cambiás el dominio, reemplazá `celesdandrea.com` en esos archivos y en `pub
 Si cambiás LinkedIn o Instagram en `src/config.js`, actualizalos también en `sameAs` de `index.html`.
 Sitemap enviado en Google Search Console como `sitemap.xml`.
 
-## Muro de dolores (se renueva cada 15 días)
+## Formulario de contacto
+
+Los envíos se guardan en una Google Sheet tuya (sin servicios de terceros):
+
+1. Creá una Google Sheet nueva y privada → Extensiones → Apps Script → pegá `apps-script/Contacto.gs`.
+2. Implementar → Aplicación web (ejecutar como vos, acceso: cualquier persona). Copiá la URL `/exec`.
+3. Pegala en `src/config.js` → `CONTACT_ENDPOINT` y publicá.
+
+Mientras `CONTACT_ENDPOINT` esté vacío, el formulario abre un correo prearmado con los datos.
+Cada fila guarda el consentimiento y la versión del aviso de privacidad aceptado.
+Si cambiás el texto del aviso, actualizá `AVISO_VERSION` en `Contact.jsx`.
+
+**Medición:** los envíos se cuentan en la planilla. Los CTA tienen el atributo `data-cta`
+para medir clics si sumás una herramienta con eventos (Cloudflare Web Analytics mide visitas, no clics).
+
+## Muro de dolores (pausado)
+
+Fuera de la landing hasta tener moderación y mensajes reales. El componente sigue en
+`src/components/Dolores.jsx` y la tarea programada está comentada en `.github/workflows/deploy.yml`.
+Para retomarlo: sumá `<Dolores />` en `src/App.jsx`, descomentá el `schedule` y seguí estos pasos.
 
 1. Creá una Google Sheet → Extensiones → Apps Script → pegá `apps-script/Code.gs`.
 2. Implementar → Aplicación web (ejecutar como vos, acceso: cualquier persona). Copiá la URL `/exec`.

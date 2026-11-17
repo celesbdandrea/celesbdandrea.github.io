@@ -3,9 +3,9 @@ name: Deploy a GitHub Pages
 on:
   push:
     branches: [main]
-  # Renueva el muro de dolores cada ~15 días (días 1 y 16 de cada mes, 09:00 ART)
-  schedule:
-    - cron: '0 12 1,16 * *'
+  # Muro de dolores pausado. Para retomarlo, volvé a activar:
+  # schedule:
+  #   - cron: '0 12 1,16 * *'
   workflow_dispatch:
 
 permissions:

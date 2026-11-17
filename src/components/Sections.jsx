@@ -6,9 +6,10 @@ import {
   useTransform,
   useSpring,
   useMotionValueEvent,
+  useReducedMotion,
 } from 'framer-motion';
-import { Reveal, Stagger, SplitTitle, CountUp, Magnetic, TiltCard } from './motion.jsx';
-import { LINKS, CONTACT } from '../config.js';
+import { Reveal, Stagger, SplitTitle, Magnetic, TiltCard } from './motion.jsx';
+import { LINKS, CONTACT, PILARES, RECURSOS } from '../config.js';
 
 export function Arrow() {
   return (
@@ -18,7 +19,8 @@ export function Arrow() {
   );
 }
 
-const HERO_IMG = `${import.meta.env.BASE_URL}img/celes-hero.jpg`;
+const img = (f) => `${import.meta.env.BASE_URL}img/${f}`;
+const RECURSOS_LISTOS = RECURSOS.filter((r) => r.url);
 
 /* ───────────────────────── Barra de progreso ───────────────────────── */
 export function ScrollProgress() {
@@ -30,9 +32,8 @@ export function ScrollProgress() {
 /* ───────────────────────── Navegación ───────────────────────── */
 const NAV = [
   ['#sobre-mi', 'Sobre mí'],
-  ['#que-hago', 'Qué hago'],
-  ['#entrenamiento-nube', 'Entrenamiento Nube'],
-  ['#muro', 'Muro'],
+  ['#aprende', 'Aprendé'],
+  ...(RECURSOS_LISTOS.length ? [['#recursos', 'Recursos']] : []),
   ['#contacto', 'Contacto'],
 ];
 
@@ -67,6 +68,7 @@ export function Nav() {
       </motion.a>
       <motion.nav
         className="nav__links"
+        aria-label="Principal"
         initial="hidden"
         animate="show"
         variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.3 } } }}
@@ -82,8 +84,8 @@ export function Nav() {
           </motion.a>
         ))}
       </motion.nav>
-      <Magnetic href="#contacto" className="pill nav__cta">
-        Agendá una charla
+      <Magnetic href="#contacto" className="pill nav__cta" data-cta="nav-dudas">
+        Compartí tus dudas
       </Magnetic>
       <button
         className={`burger ${open ? 'is-open' : ''}`}
@@ -122,130 +124,226 @@ export function Nav() {
   );
 }
 
-/* ───────────────────────── Hero ───────────────────────── */
+/* ───────────────────────── 1. Hero: banners + propuesta ───────────────────────── */
+// Cada banner: una situación del emprendedor y, directo, qué va a resolver.
+const BANNERS = [
+  {
+    label: 'Primeros pasos',
+    title: ['Vendés por redes y querés', 'tu tienda online'],
+    fix: 'Armá tu tienda online sin improvisar.',
+    word: 'tienda',
+  },
+  {
+    label: 'Por dónde arrancar',
+    title: ['No sabés', 'por dónde arrancar'],
+    fix: 'Aprendé el orden de tus primeros pasos.',
+    word: 'paso',
+  },
+  {
+    label: 'Información',
+    title: ['Tanta información que', 'no sabés qué te sirve'],
+    fix: 'Quedate con lo que necesitás para tu etapa, sin tecnicismos.',
+    word: 'orden',
+  },
+  {
+    label: 'Ventas',
+    title: ['Tenés seguidores', 'pero no ventas'],
+    fix: 'Descubrí qué revisar primero para que te compren.',
+    word: 'ventas',
+  },
+];
+const ROTATE_MS = 6000;
+
 export function Hero() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '40%']);
-  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduce = useReducedMotion();
+  const auto = !paused && !reduce;
+  const b = BANNERS[i];
+
+  useEffect(() => {
+    if (!auto) return;
+    const t = setTimeout(() => setI((n) => (n + 1) % BANNERS.length), ROTATE_MS);
+    return () => clearTimeout(t);
+  }, [i, auto]);
+
+  const go = (n) => setI((n + BANNERS.length) % BANNERS.length);
 
   return (
-    <section className="hero" id="top" ref={ref}>
-      <motion.div className="hero__text" style={{ y: textY, opacity: fade }}>
-        <motion.p
-          className="eyebrow eyebrow--light"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-        >
-          Especialista en e-Commerce · Tiendanube Argentina
-        </motion.p>
-        <SplitTitle
-          as="h1"
-          immediate
-          delay={0.35}
-          className="hero__title"
-          text="Escalá tu negocio online, *paso* *a* *paso*"
-        />
-        <motion.p
-          className="hero__sub"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-        >
-          Soy Celes D'Andrea. Acompaño a emprendedores y comerciantes a vender más, con estrategia,
-          claridad y un plan que se pueda sostener.
-        </motion.p>
+    <section className="hero" id="top">
+      <div
+        className="banners"
+        role="region"
+        aria-roledescription="carrusel"
+        aria-label="Qué resolvés conmigo"
+        onPointerEnter={(e) => e.pointerType === 'mouse' && setPaused(true)}
+        onPointerLeave={(e) => e.pointerType === 'mouse' && setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+      >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.article
+            key={i}
+            className={`banner banner--${i % 2 ? 'arena' : 'marfil'}`}
+            aria-roledescription="placa"
+            aria-label={`${i + 1} de ${BANNERS.length}`}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -60 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.25}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -60) go(i + 1);
+              else if (info.offset.x > 60) go(i - 1);
+            }}
+          >
+            <p className="watermark banner__word" aria-hidden>
+              {b.word}
+            </p>
+            <div className="banner__body">
+              <p className="eyebrow">{b.label}</p>
+              <h2 className="banner__title">
+                {b.title[0]} <span className="it">{b.title[1]}</span>
+              </h2>
+              <p className="banner__fix">{b.fix}</p>
+            </div>
+          </motion.article>
+        </AnimatePresence>
+
+        <div className="banners__nav" role="tablist" aria-label="Elegí una situación">
+          {BANNERS.map((x, n) => (
+            <button
+              key={x.label}
+              type="button"
+              role="tab"
+              aria-selected={n === i}
+              className={`banners__tab ${n === i ? 'is-on' : ''}`}
+              onClick={() => setI(n)}
+            >
+              <span className="banners__bar">
+                {n === i && (
+                  <motion.span
+                    key={`${i}-${auto}`}
+                    className="banners__fill"
+                    initial={{ scaleX: auto ? 0 : 1 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: auto ? ROTATE_MS / 1000 : 0, ease: 'linear' }}
+                  />
+                )}
+              </span>
+              <span className="banners__label">{x.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="hero__strip">
+        <div>
+          <motion.h1
+            className="hero__title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            Llevá tu negocio al mundo online, <span className="it">paso a paso.</span>
+          </motion.h1>
+          <motion.p
+            className="hero__sub"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.8 }}
+          >
+            Sin vueltas, sin perder tiempo ni plata, y con alguien que te acompaña.
+          </motion.p>
+        </div>
         <motion.div
           className="hero__ctas"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
         >
-          <Magnetic href="#contacto" className="btn btn--primary-inv">
-            Empezá hoy
+          <Magnetic href="#contacto" className="btn btn--primary-inv" data-cta="hero-dudas">
+            Compartí tus dudas conmigo
           </Magnetic>
-          <Magnetic href="#sobre-mi" className="cta">
-            Conocerme
+          <Magnetic href={CONTACT.instagram} target="_blank" rel="noreferrer" className="cta" data-cta="hero-instagram">
+            Seguime en Instagram <Arrow />
           </Magnetic>
         </motion.div>
-      </motion.div>
-
-      <motion.div
-        className="hero__photo"
-        initial={{ clipPath: 'inset(100% 0% 0% 0% round 24px)' }}
-        animate={{ clipPath: 'inset(0% 0% 0% 0% round 24px)' }}
-        transition={{ duration: 1.4, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}
-      >
-        <motion.img src={HERO_IMG} alt="Celes D'Andrea trabajando con su laptop" style={{ y: imgY, scale: imgScale }} />
-      </motion.div>
-
-
-      <motion.a
-        href="#manifiesto"
-        className="hero__scroll"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        aria-label="Bajar"
-      >
-        <span />
-      </motion.a>
-    </section>
-  );
-}
-
-/* ───────────────────────── Manifiesto ───────────────────────── */
-export function Manifesto() {
-  return (
-    <section className="manifesto" id="manifiesto">
-      <p className="watermark" aria-hidden>
-        ventas
-      </p>
-      <div className="manifesto__body">
-        <Reveal as="p" className="eyebrow">
-          Estrategia · e-Commerce
-        </Reveal>
-        <SplitTitle className="display display--dark" text="Vendé más online, sin *perderte* en el camino" />
-        <Reveal delay={0.3}>
-          <p className="mono-p center">
-            Ayudo a emprendedores y comerciantes a ordenar su tienda, entender sus números y dar el
-            próximo paso con claridad. Sin fórmulas mágicas: estrategia, acompañamiento y acción.
-          </p>
-        </Reveal>
-        <Reveal delay={0.5}>
-          <a href="#contacto" className="cta">
-            Empecemos hoy <Arrow />
-          </a>
-        </Reveal>
       </div>
     </section>
   );
 }
 
-/* ───────────────────────── Marquesina ───────────────────────── */
-export function Marquee({ items, reverse = false, variant = '' }) {
-  const row = [...items, ...items];
+/* ───────────────────────── 3. Qué aprendés conmigo ───────────────────────── */
+export function Aprende() {
   return (
-    <div className={`marquee ${variant}`}>
-      <motion.div
-        className="marquee__track"
-        animate={{ x: reverse ? ['-50%', '0%'] : ['0%', '-50%'] }}
-        transition={{ repeat: Infinity, duration: 28, ease: 'linear' }}
-      >
-        {row.map((t, i) => (
-          <span key={i} className={i % 2 ? 'it' : ''}>
-            {t} <em aria-hidden />
-          </span>
+    <section className="aprende" id="aprende">
+      <div className="section-head">
+        <Reveal as="p" className="eyebrow">
+          Qué aprendés conmigo
+        </Reveal>
+        <SplitTitle className="display display--dark" text="Cuatro temas, *un* *recorrido*" />
+        <Reveal delay={0.2}>
+          <p className="mono-p center">Cada tema tiene sus videos para que avances a tu ritmo.</p>
+        </Reveal>
+      </div>
+      <Stagger className="aprende__grid" gap={0.1}>
+        {PILARES.map((p, i) => (
+          <TiltCard className="card" key={p.title}>
+            <span className="card__n">{String(i + 1).padStart(2, '0')}</span>
+            <h3 className="card__title">{p.title}</h3>
+            <p className="card__text">{p.text}</p>
+            <a
+              href={p.videos}
+              target="_blank"
+              rel="noreferrer"
+              className="cta card__cta"
+              data-cta={`pilar-${i + 1}`}
+              aria-label={`Ver videos sobre ${p.title}`}
+            >
+              Ver videos <Arrow />
+            </a>
+          </TiltCard>
         ))}
-      </motion.div>
-    </div>
+      </Stagger>
+    </section>
   );
 }
 
-/* ───────────────────────── Sobre mí ───────────────────────── */
-const PORTRAIT_IMG = `${import.meta.env.BASE_URL}img/celes-retrato.jpg`;
+/* ───────────────────────── 4. Recursos ───────────────────────── */
+export function Recursos() {
+  if (!RECURSOS_LISTOS.length) return null;
+  return (
+    <section className="recursos" id="recursos">
+      <div className="section-head">
+        <Reveal as="p" className="eyebrow">
+          Recursos gratuitos
+        </Reveal>
+        <SplitTitle className="display display--dark" text="Para *arrancar* hoy" />
+      </div>
+      <Stagger className="recursos__grid" gap={0.1}>
+        {RECURSOS_LISTOS.map((r, i) => (
+          <TiltCard className="card card--recurso" key={r.title}>
+            <p className="eyebrow card__tag">Descargable · {r.formato}</p>
+            <h3 className="card__title">{r.title}</h3>
+            <p className="card__text">{r.text}</p>
+            <a href={r.url} target="_blank" rel="noreferrer" className="pill card__pill" data-cta={`recurso-${i + 1}`}>
+              Descargar gratis <Arrow />
+            </a>
+          </TiltCard>
+        ))}
+      </Stagger>
+    </section>
+  );
+}
+
+/* ───────────────────────── 5a. Quién soy ───────────────────────── */
+const COLLAGE = [
+  { src: 'escena-circle.jpg', alt: "Celes D'Andrea en el escenario de Tiendanube Circle", pos: '40% 25%' },
+  { src: 'escena-escenario.jpg', alt: "Celes D'Andrea dando una charla frente a pantallas gigantes", pos: '45% 50%' },
+];
 
 export function About() {
   const ref = useRef(null);
@@ -254,12 +352,7 @@ export function About() {
 
   return (
     <section className="about" id="sobre-mi" ref={ref}>
-      <motion.div
-        className="about__visual"
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: '-80px' }}
-      >
+      <motion.div className="about__visual" initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
         <motion.div
           className="about__arch"
           variants={{
@@ -269,7 +362,7 @@ export function About() {
           transition={{ duration: 1.3, ease: [0.76, 0, 0.24, 1] }}
         >
           <motion.img
-            src={PORTRAIT_IMG}
+            src={img('celes-retrato.jpg')}
             alt="Retrato de Celes D'Andrea con los brazos cruzados"
             loading="lazy"
             decoding="async"
@@ -279,324 +372,33 @@ export function About() {
       </motion.div>
 
       <div className="about__text">
-        <Reveal as="p" className="eyebrow eyebrow--light">
-          Speaker · Host · Especialista en e-Commerce
+        <Reveal as="p" className="eyebrow">
+          Quién soy
         </Reveal>
-        <SplitTitle className="display display--light about__title" text="Conocé a *Celes*" />
-        <motion.span
-          className="about__rule"
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        />
+        <SplitTitle className="display display--dark about__title" text="Hola, soy *Celes*" />
 
-        <div className="about__cols">
-          <Reveal delay={0.2}>
-            <h3 className="about__h">
-              ¿Quién <span className="it">soy?</span>
-            </h3>
-            <p className="mono-p mono-p--light">
-              Especialista en e-Commerce en Tiendanube Argentina. Licenciada en Relaciones Públicas e
-              Institucionales (UADE), especializada en comunicación y marketing digital.
-            </p>
-          </Reveal>
-          <Reveal delay={0.35}>
-            <h3 className="about__h">
-              ¿Qué <span className="it">hago?</span>
-            </h3>
-            <p className="mono-p mono-p--light">
-              Creo capacitaciones, talleres y contenidos educativos. Soy speaker y host de Entrenamiento
-              Nube, los webinars mensuales de Tiendanube.
-            </p>
-          </Reveal>
-        </div>
-
-        <Reveal delay={0.45}>
-          <blockquote className="about__quote">
-            “Crecer no requiere hacerlo todo a la vez: <span className="it">requiere saber cuál es el próximo paso.</span>”
-          </blockquote>
+        <Reveal delay={0.15}>
+          <p className="mono-p">
+            Como vos, me animé a emprender. Sé que los primeros pasos son los que más cuestan. Por eso quiero
+            acompañarte en los tuyos.
+          </p>
+          <p className="mono-p">
+            Soy especialista en <span className="nowrap">e-commerce</span> en Tiendanube: doy capacitaciones y soy speaker y host de{' '}
+            <a className="link" href={LINKS.entrenamientoNube} target="_blank" rel="noreferrer" data-cta="about-entrenamiento">
+              Entrenamiento Nube
+            </a>
+            , las clases en vivo y gratuitas de Tiendanube. Soy Licenciada en Relaciones Públicas
+            (UADE) y trabajé en consultoría de <span className="nowrap">e-commerce</span>.
+          </p>
         </Reveal>
 
-        <Stagger className="about__facts" gap={0.1}>
-          {[
-            ['UADE', 'Lic. en RR.PP. e Institucionales'],
-            ['Tiendanube', 'Especialista en e-Commerce'],
-            ['Entrenamiento Nube', 'Speaker y host mensual'],
-          ].map(([t, s]) => (
-            <Stagger.Item key={t} className="fact">
-              <strong>{t}</strong>
-              <span>{s}</span>
+        <Stagger className="about__collage" gap={0.12}>
+          {COLLAGE.map((f) => (
+            <Stagger.Item key={f.src} className="about__foto">
+              <img src={img(f.src)} alt={f.alt} loading="lazy" decoding="async" style={{ objectPosition: f.pos }} />
             </Stagger.Item>
           ))}
         </Stagger>
-
-        <Reveal delay={0.5}>
-          <Magnetic href="#contacto" className="pill">
-            Trabajá conmigo <Arrow />
-          </Magnetic>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────────────────── En escena ───────────────────────── */
-const ESCENA = [
-  { src: 'escena-set.jpg', alt: "Celes D'Andrea sentada en un set de grabación, sonriendo", pos: '50% 35%' },
-  { src: 'escena-panel.jpg', alt: "Celes D'Andrea hablando en un panel sobre e-commerce", pos: '50% 35%' },
-  { src: 'escena-circle.jpg', alt: "Celes D'Andrea en el escenario de Tiendanube Circle", pos: '40% 25%' },
-  { src: 'escena-escenario.jpg', alt: "Celes D'Andrea en un escenario con pantallas gigantes", pos: '45% 50%' },
-];
-
-export function Escena() {
-  return (
-    <section className="escena" id="en-escena">
-      <div className="section-head">
-        <Reveal as="p" className="eyebrow">
-          Speaker
-        </Reveal>
-        <SplitTitle className="display display--dark" text="En *escena*" />
-        <Reveal delay={0.2}>
-          <p className="mono-p center">
-            Charlas, paneles y capacitaciones para emprendedores y marcas que quieren vender más online.
-          </p>
-        </Reveal>
-      </div>
-      <Stagger className="escena__grid" gap={0.12}>
-        {ESCENA.map((f) => (
-          <Stagger.Item key={f.src} className="escena__foto">
-            <img
-              src={`${import.meta.env.BASE_URL}img/${f.src}`}
-              alt={f.alt}
-              loading="lazy"
-              decoding="async"
-              style={{ objectPosition: f.pos }}
-            />
-          </Stagger.Item>
-        ))}
-      </Stagger>
-    </section>
-  );
-}
-
-/* ───────────────────────── Franja de credenciales ───────────────────────── */
-export function Credentials() {
-  const items = [
-    { t: 'Tiendanube', s: 'roman' },
-    { t: 'UADE', s: 'italic' },
-    { t: 'Entrenamiento Nube', s: 'roman' },
-    { t: 'Marketing digital', s: 'italic' },
-    { t: 'RR.PP.', s: 'roman' },
-  ];
-  return (
-    <section className="creds">
-      <Reveal as="p" className="creds__label eyebrow">
-        Trayectoria y formación
-      </Reveal>
-      <Stagger className="creds__list" gap={0.1}>
-        {items.map((i) => (
-          <Stagger.Item key={i.t} className={`creds__item creds__item--${i.s}`}>
-            {i.t}
-          </Stagger.Item>
-        ))}
-      </Stagger>
-    </section>
-  );
-}
-
-/* ───────────────────────── Qué hago ───────────────────────── */
-const SERVICES = [
-  {
-    n: '01',
-    title: 'Capacitaciones',
-    text: 'Webinars y clases en vivo para que aprendas a vender online con herramientas concretas.',
-    tag: 'Grupal',
-  },
-  {
-    n: '02',
-    title: 'Talleres',
-    text: 'Espacios prácticos para trabajar sobre tu propia tienda: catálogo, comunicación, redes y ventas.',
-    tag: 'Práctico',
-  },
-  {
-    n: '03',
-    title: 'Contenidos educativos',
-    text: 'Guías, materiales y piezas pensadas para emprendedores que están dando sus primeros pasos o buscan escalar.',
-    tag: 'Formación',
-  },
-  {
-    n: '04',
-    title: 'Asesoría 1:1',
-    text: '¿No sabés cuál es tu próximo paso? Lo vemos juntas/os y armamos un plan a tu medida.',
-    tag: 'Personalizado',
-  },
-  {
-    n: '05',
-    title: 'Auditoría de negocio',
-    text: 'Revisamos tu tienda de punta a punta y detectamos qué frena tus ventas y qué podés mejorar ya.',
-    tag: 'Diagnóstico',
-  },
-];
-
-export function Services() {
-  return (
-    <section className="services" id="que-hago">
-      <div className="section-head">
-        <Reveal as="p" className="eyebrow">
-          Qué hago
-        </Reveal>
-        <SplitTitle className="display display--dark" text="Formas de *crecer* juntos" />
-      </div>
-      <Stagger className="services__grid" gap={0.1}>
-        {SERVICES.map((s) => (
-          <TiltCard className="service-card" key={s.n}>
-            <span className="service-card__n">{s.n}</span>
-            <h3>{s.title}</h3>
-            <p>{s.text}</p>
-            <p className="eyebrow service-card__tag">{s.tag}</p>
-          </TiltCard>
-        ))}
-        <TiltCard className="service-card service-card--cta">
-          <h3>
-            ¿Por dónde <span className="it">empiezo?</span>
-          </h3>
-          <p>Contame qué necesitás y te digo cómo te puedo ayudar.</p>
-          <Magnetic href="#contacto" className="btn btn--primary-inv">
-            Escribime <Arrow />
-          </Magnetic>
-        </TiltCard>
-      </Stagger>
-    </section>
-  );
-}
-
-/* ───────────────────────── Entrenamiento Nube ───────────────────────── */
-const TOPICS = [
-  'Primeros pasos y configuración de tu tienda',
-  'Diseño, plantillas y catálogo',
-  'Finanzas para emprendedores',
-  'Email marketing',
-  'Redes sociales y Meta Ads',
-  'Hot Sale y CyberMonday',
-];
-
-export function Entrenamiento() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
-  const [active, setActive] = useState(0);
-
-  return (
-    <section className="nube" id="entrenamiento-nube" ref={ref}>
-      <motion.div className="nube__bg" style={{ y: bgY }} aria-hidden>
-        nube
-      </motion.div>
-      <div className="nube__inner">
-        <div className="nube__left">
-          <Reveal as="p" className="eyebrow eyebrow--light">
-            Speaker y host · Tiendanube
-          </Reveal>
-          <SplitTitle className="display display--light" text="Entrenamiento *Nube*" />
-          <Reveal delay={0.2}>
-            <p className="mono-p mono-p--light">
-              Todos los meses hosteo y doy charlas en Entrenamiento Nube: una capacitación online, en
-              vivo y 100% gratuita del equipo de Tiendanube para que tu tienda venda más.
-            </p>
-          </Reveal>
-          <div className="nube__stats">
-            {[
-              [30, '+', 'ediciones'],
-              [74500, '+', 'personas registradas'],
-              [22660, '+', 'asistentes en vivo'],
-            ].map(([n, p, l], i) => (
-              <Reveal key={l} delay={0.2 + i * 0.12} className="stat">
-                <strong>
-                  <CountUp to={n} prefix={p} />
-                </strong>
-                <span>{l}</span>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal delay={0.4} className="nube__ctas">
-            <Magnetic href={LINKS.entrenamientoNube} target="_blank" rel="noreferrer" className="btn btn--primary-inv">
-              Anotate al próximo
-            </Magnetic>
-            <Magnetic href={LINKS.playlist} target="_blank" rel="noreferrer" className="cta">
-              Ver ediciones anteriores <Arrow />
-            </Magnetic>
-          </Reveal>
-        </div>
-
-        <Reveal className="nube__card" delay={0.2} x={40} y={0}>
-          <div className="nube__card-top">
-            <span className="live-dot" /> En vivo · una vez por mes
-          </div>
-          <p className="nube__card-title">
-            Temas que <span className="it">vemos</span>
-          </p>
-          <ul className="topics">
-            {TOPICS.map((t, i) => (
-              <motion.li
-                key={t}
-                onMouseEnter={() => setActive(i)}
-                onFocus={() => setActive(i)}
-                tabIndex={0}
-                className={active === i ? 'is-active' : ''}
-              >
-                {active === i && <motion.span layoutId="topic-pill" className="topics__pill" />}
-                <span className="topics__n">{String(i + 1).padStart(2, '0')}</span>
-                <span className="topics__t">{t}</span>
-              </motion.li>
-            ))}
-          </ul>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────────────────── Proceso paso a paso ───────────────────────── */
-const STEPS = [
-  ['Diagnóstico', 'Me contás dónde estás, qué vendés y qué te frena.'],
-  ['Prioridades', 'Ordenamos qué hacer primero para que el esfuerzo rinda.'],
-  ['Plan de acción', 'Bajamos todo a pasos concretos y medibles.'],
-  ['Acompañamiento', 'Ajustamos sobre la marcha y celebramos cada avance.'],
-];
-
-export function Process() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 75%', 'end 60%'] });
-  const line = useSpring(scrollYProgress, { stiffness: 100, damping: 25 });
-  return (
-    <section className="process" ref={ref}>
-      <div className="section-head">
-        <Reveal as="p" className="eyebrow">
-          Cómo trabajamos
-        </Reveal>
-        <SplitTitle className="display display--dark" text="Paso a *paso*" />
-      </div>
-      <div className="process__list">
-        <div className="process__rail">
-          <motion.div className="process__rail-fill" style={{ scaleY: line }} />
-        </div>
-        {STEPS.map(([t, d], i) => (
-          <Reveal key={t} className="step" x={i % 2 ? 40 : -40} y={0} delay={0.05}>
-            <motion.span
-              className="step__dot"
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true, margin: '-40% 0px' }}
-              transition={{ type: 'spring', stiffness: 260, damping: 14 }}
-            >
-              {i + 1}
-            </motion.span>
-            <div>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </div>
-          </Reveal>
-        ))}
       </div>
     </section>
   );
@@ -604,24 +406,22 @@ export function Process() {
 
 /* ───────────────────────── Footer ───────────────────────── */
 export function Footer() {
+  const links = [
+    ['Instagram', CONTACT.instagram],
+    ['TikTok', CONTACT.tiktok],
+    ['LinkedIn', CONTACT.linkedin],
+    ['Email', `mailto:${CONTACT.email}`],
+  ].filter(([, href]) => href);
   return (
     <footer className="footer">
       <div className="footer__top">
         <p className="footer__script">Gracias por pasar.</p>
-        <nav className="footer__links">
-          <a href={`mailto:${CONTACT.email}`}>Email</a>
-          <a href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">
-            WhatsApp
-          </a>
-          <a href={CONTACT.linkedin} target="_blank" rel="noreferrer">
-            LinkedIn
-          </a>
-          <a href={CONTACT.instagram} target="_blank" rel="noreferrer">
-            Instagram
-          </a>
-          <a href={LINKS.entrenamientoNube} target="_blank" rel="noreferrer">
-            Entrenamiento Nube
-          </a>
+        <nav className="footer__links" aria-label="Redes y contacto">
+          {links.map(([label, href]) => (
+            <a key={label} href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})} data-cta={`footer-${label.toLowerCase()}`}>
+              {label}
+            </a>
+          ))}
         </nav>
       </div>
       <motion.p
@@ -633,7 +433,9 @@ export function Footer() {
       >
         Celes <span className="it">D'Andrea</span>
       </motion.p>
-      <p className="footer__legal">© {new Date().getFullYear()} Celes D'Andrea · Buenos Aires, Argentina</p>
+      <p className="footer__legal">
+        © {new Date().getFullYear()} Celes D'Andrea · Buenos Aires, Argentina
+      </p>
     </footer>
   );
 }
