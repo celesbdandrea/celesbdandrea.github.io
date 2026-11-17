@@ -257,7 +257,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.8 }}
           >
-            Sin vueltas, sin perder tiempo ni plata, y con alguien que te acompaña.
+            Te acompaño desde la primera decisión hasta tu primera venta.
           </motion.p>
         </div>
         <motion.div
