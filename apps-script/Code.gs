@@ -34,7 +34,7 @@
  */
 const AUTO_APROBAR = true;
 const NOTIFICAR = true; // te llega un email por cada consulta de contacto
-const MURO_LIMITE = 24; // mensajes que devuelve el muro (los más nuevos)
+const MURO_LIMITE = 4; // mensajes que devuelve el muro (los más nuevos)
 const PALABRAS_BLOQUEADAS = ['http://', 'https://', 'www.', 'casino', 'crypto', 'bitcoin'];
 
 const HOJAS = {
@@ -60,20 +60,30 @@ function clean_(v, max) {
 
 // Consulta a Cloudflare si el token del formulario es de una persona real.
 // Si no hay TURNSTILE_SECRET cargada, no se verifica (sirve para la transición).
-function captchaOk_(token) {
-  const secret = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
-  if (!secret) return true;
-  if (!token || String(token).length > 2048) return false;
+// Devuelve '' si está todo bien, o el motivo del rechazo (los códigos de Cloudflare).
+function captchaError_(token) {
+  const secret = String(PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET') || '').trim();
+  if (!secret) return '';
+  if (!token || String(token).length > 2048) return 'sin-token';
   try {
     const res = UrlFetchApp.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'post',
       payload: { secret: secret, response: String(token) },
       muteHttpExceptions: true,
     });
-    return JSON.parse(res.getContentText()).success === true;
+    const r = JSON.parse(res.getContentText());
+    if (r.success === true) return '';
+    return (r['error-codes'] || []).join(',') || 'rechazado';
   } catch (err) {
-    return false;
+    return 'sin-conexion: ' + String(err && err.message ? err.message : err).slice(0, 200);
   }
+}
+
+// Para probar desde el editor: elegí "probarCloudflare" en el desplegable y tocá Ejecutar.
+// Si Google pide permisos, aceptalos. En el registro tiene que decir "invalid-input-response"
+// (eso significa que la clave secreta está bien y que Cloudflare responde).
+function probarCloudflare() {
+  Logger.log(captchaError_('token-de-prueba') || 'ok');
 }
 
 function doPost(e) {
@@ -84,7 +94,8 @@ function doPost(e) {
     return json_({ ok: false });
   }
   if (data.web) return json_({ ok: false }); // campo trampa para bots
-  if (!captchaOk_(data.captcha)) return json_({ ok: false, error: 'captcha' });
+  const motivo = captchaError_(data.captcha);
+  if (motivo) return json_({ ok: false, error: 'captcha', motivo: motivo });
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
