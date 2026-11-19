@@ -71,3 +71,10 @@ export const RECURSOS = [
 // muestra mensajes.
 export const FORMS_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbwYmoaiOuZFBl7KpT90KDwgPYntMUPIFhugAB5EpS6zWWM7gYJlJhWalME6cHb1a9X-/exec';
+
+// Cloudflare Turnstile (anti-bots de los formularios). Es la "site key" pública
+// del widget creado en dash.cloudflare.com → Turnstile. La "secret key" NO va
+// acá: se guarda en Apps Script → Configuración del proyecto → Propiedades del
+// script, con el nombre TURNSTILE_SECRET.
+// Mientras quede vacía, los formularios se envían sin verificación.
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAGH1xzRkZ_LUzJFY';

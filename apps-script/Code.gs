@@ -22,6 +22,13 @@
  * Ley 25.326: los contactos se borran 12 meses después de la última conversación;
  * los mensajes del muro, cuando la persona lo pida.
  *
+ * Anti-bots (Cloudflare Turnstile): guardá la "secret key" del widget en
+ * Configuración del proyecto (ícono de engranaje) → Propiedades del script →
+ * Agregar propiedad: TURNSTILE_SECRET = <tu secret key>. Con esa propiedad
+ * cargada, se rechaza todo envío que no traiga una verificación válida.
+ * La primera vez Google te va a pedir autorizar "conectarse a un servicio
+ * externo": es para consultar a Cloudflare.
+ *
  * Si cambiás este archivo: Implementar → Gestionar implementaciones → editar →
  * Versión nueva. Así la URL /exec sigue siendo la misma.
  */
@@ -51,12 +58,37 @@ function clean_(v, max) {
   return String(v || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').replace(/^[=+\-]+/, '').trim().slice(0, max);
 }
 
+// Consulta a Cloudflare si el token del formulario es de una persona real.
+// Si no hay TURNSTILE_SECRET cargada, no se verifica (sirve para la transición).
+function captchaOk_(token) {
+  const secret = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
+  if (!secret) return true;
+  if (!token || String(token).length > 2048) return false;
+  try {
+    const res = UrlFetchApp.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'post',
+      payload: { secret: secret, response: String(token) },
+      muteHttpExceptions: true,
+    });
+    return JSON.parse(res.getContentText()).success === true;
+  } catch (err) {
+    return false;
+  }
+}
+
 function doPost(e) {
+  let data;
+  try {
+    data = JSON.parse((e.postData && e.postData.contents) || '{}');
+  } catch (err) {
+    return json_({ ok: false });
+  }
+  if (data.web) return json_({ ok: false }); // campo trampa para bots
+  if (!captchaOk_(data.captcha)) return json_({ ok: false, error: 'captcha' });
+
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const data = JSON.parse((e.postData && e.postData.contents) || '{}');
-    if (data.web) return json_({ ok: false }); // campo trampa para bots
     if (data.tipo === 'muro') return guardarMuro_(data);
     if (data.tipo === 'contacto') return guardarContacto_(data);
     return json_({ ok: false });

@@ -1,8 +1,9 @@
 import { CONTACT } from '../config.js';
+import { CAPTCHA_ACTIVO } from './Captcha.jsx';
 
 // Versión de los avisos: se guarda con cada envío para saber qué texto aceptó cada persona.
 // Si cambiás algún texto de acá, actualizá la fecha.
-export const AVISO_VERSION = '2026-11-17';
+export const AVISO_VERSION = '2026-11-18';
 
 const AVISOS = {
   contacto: {
@@ -35,6 +36,13 @@ export function AvisoPrivacidad({ tipo = 'contacto' }) {
         <strong>Dónde se guardan.</strong> En una planilla privada de Google a la que solo accedo yo.
         Google LLC presta el servicio de almacenamiento.
       </p>
+      {CAPTCHA_ACTIVO && (
+        <p>
+          <strong>Protección contra bots.</strong> Para frenar envíos automáticos uso Cloudflare
+          Turnstile. Cloudflare analiza datos técnicos de tu navegador y tu conexión, como la dirección
+          IP, solo para confirmar que sos una persona. No ve lo que escribís en el formulario.
+        </p>
+      )}
       <p>
         <strong>Cuánto tiempo.</strong> {a.tiempo}
       </p>

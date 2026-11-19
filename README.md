@@ -71,5 +71,19 @@ implementación para no cambiar la URL.
 Cada fila guarda el consentimiento y la versión del aviso de privacidad aceptado. Si cambiás
 algún texto de los avisos (`src/components/Privacy.jsx`), actualizá `AVISO_VERSION`.
 
+**Anti-bots (Cloudflare Turnstile):** los dos formularios piden una verificación invisible.
+A casi nadie le muestra nada; si algo le resulta sospechoso, aparece una casilla. Para activarlo:
+
+1. En [dash.cloudflare.com](https://dash.cloudflare.com) → Turnstile → Agregar widget. Dominios:
+   `celesdandrea.com` y `localhost`. Modo: Administrado.
+2. Copiá la **site key** (pública) en `src/config.js` → `TURNSTILE_SITE_KEY`.
+3. Copiá la **secret key** en Apps Script → Configuración del proyecto → Propiedades del script,
+   con el nombre `TURNSTILE_SECRET`. Nunca la subas al repositorio.
+4. Pegá la versión nueva de `apps-script/Code.gs`, autorizá la conexión externa y publicá una
+   versión nueva de la implementación.
+
+Sin `TURNSTILE_SECRET`, el script no verifica nada (los envíos siguen funcionando). En
+`npm run dev`, sin site key propia, se usa la clave de prueba de Cloudflare.
+
 **Medición:** los envíos se cuentan en la planilla. Los CTA tienen el atributo `data-cta`
 para medir clics si sumás una herramienta con eventos (Cloudflare Web Analytics mide visitas, no clics).

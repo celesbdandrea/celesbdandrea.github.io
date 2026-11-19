@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal, SplitTitle } from './motion.jsx';
 import { Arrow } from './Sections.jsx';
 import { FORMS_ENDPOINT } from '../config.js';
 import { useToast } from './Toast.jsx';
 import { AvisoPrivacidad, AVISO_VERSION } from './Privacy.jsx';
+import Captcha, { CAPTCHA_ACTIVO } from './Captcha.jsx';
+import { enviarFormulario } from './enviar.js';
 
 const MAX = 280;
 const VISIBLES = 9;
@@ -41,6 +43,8 @@ export default function Dolores() {
   const [f, setF] = useState(EMPTY);
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | sending | sent
+  const [captcha, setCaptcha] = useState('');
+  const captchaRef = useRef(null);
   const toast = useToast();
 
   const cargar = useCallback(async () => {
@@ -88,6 +92,10 @@ export default function Dolores() {
       return;
     }
     if (f.web) return;
+    if (CAPTCHA_ACTIVO && !captcha) {
+      toast('Estamos comprobando que no sos un robot. Probá de nuevo en unos segundos.', 'warn');
+      return;
+    }
 
     const data = {
       tipo: 'muro',
@@ -96,27 +104,27 @@ export default function Dolores() {
       desafio: f.desafio.trim().slice(0, MAX),
       consentimiento: true,
       aviso: AVISO_VERSION,
+      captcha,
     };
     setStatus('sending');
     try {
-      if (!DEMO) {
-        // Apps Script no admite el preflight de CORS: se envía como text/plain sin leer la respuesta.
-        await fetch(FORMS_ENDPOINT, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(data),
-        });
-      }
+      if (!DEMO) await enviarFormulario(data);
       setMine({ id: 'mine', nombre: data.nombre, tienda: data.tienda, desafio: data.desafio, fecha: new Date().toISOString(), mine: true });
       setStatus('sent');
       setF(EMPTY);
       setTouched(false);
       toast('Listo, tu mensaje ya está en el muro.', 'ok');
       if (!DEMO) setTimeout(cargar, 2500);
-    } catch {
+    } catch (e) {
       setStatus('idle');
-      toast('No se pudo enviar. Probá de nuevo en un rato.', 'error');
+      toast(
+        e.message === 'captcha'
+          ? 'No pudimos comprobar que no sos un robot. Probá de nuevo.'
+          : 'No se pudo enviar. Probá de nuevo en un rato.',
+        'error'
+      );
+    } finally {
+      captchaRef.current?.reset();
     }
   }
 
@@ -213,6 +221,8 @@ export default function Dolores() {
                     <span>Acepto que mi nombre, mi tienda y mi mensaje se publiquen en este muro. *</span>
                   </label>
                 </div>
+
+                <Captcha ref={captchaRef} onToken={setCaptcha} theme="light" action="muro" />
 
                 <button type="submit" className="btn btn--primary btn--block" disabled={status === 'sending'} data-cta="muro-enviar">
                   {status === 'sending' ? <span className="spinner" aria-label="Enviando" /> : <>Publicar en el muro <Arrow /></>}

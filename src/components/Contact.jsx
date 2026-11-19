@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal, SplitTitle } from './motion.jsx';
 import { Arrow } from './Sections.jsx';
 import { CONTACT, FORMS_ENDPOINT } from '../config.js';
 import { AvisoPrivacidad, AVISO_VERSION } from './Privacy.jsx';
 import { useToast } from './Toast.jsx';
+import Captcha, { CAPTCHA_ACTIVO } from './Captcha.jsx';
+import { enviarFormulario } from './enviar.js';
 
 const ETAPAS = [
   'Tengo una idea, todavía no vendo',
@@ -21,6 +23,8 @@ export default function Contact() {
   const [f, setF] = useState(EMPTY);
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | sending | sent
+  const [captcha, setCaptcha] = useState('');
+  const captchaRef = useRef(null);
   const toast = useToast();
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
@@ -46,6 +50,10 @@ export default function Contact() {
     }
     // Campo trampa para bots: una persona no lo ve ni lo completa.
     if (f.web) return;
+    if (CAPTCHA_ACTIVO && !captcha) {
+      toast('Estamos comprobando que no sos un robot. Probá de nuevo en unos segundos.', 'warn');
+      return;
+    }
 
     const data = {
       tipo: 'contacto',
@@ -55,6 +63,7 @@ export default function Contact() {
       duda: f.duda.trim(),
       consentimiento: true,
       aviso: AVISO_VERSION,
+      captcha,
     };
 
     if (!FORMS_ENDPOINT) {
@@ -68,18 +77,20 @@ export default function Contact() {
 
     setStatus('sending');
     try {
-      await fetch(FORMS_ENDPOINT, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data),
-      });
+      await enviarFormulario(data);
       setStatus('sent');
       setF(EMPTY);
       setTouched(false);
-    } catch {
+    } catch (e) {
       setStatus('idle');
-      toast('No se pudo enviar. Probá de nuevo o escribime por Instagram.', 'error');
+      toast(
+        e.message === 'captcha'
+          ? 'No pudimos comprobar que no sos un robot. Probá de nuevo.'
+          : 'No se pudo enviar. Probá de nuevo o escribime por Instagram.',
+        'error'
+      );
+    } finally {
+      captchaRef.current?.reset();
     }
   }
 
@@ -181,6 +192,8 @@ export default function Contact() {
                     <span>Leí el aviso de privacidad y acepto que uses mis datos para responder mi consulta. *</span>
                   </label>
                 </div>
+
+                <Captcha ref={captchaRef} onToken={setCaptcha} theme="dark" action="contacto" />
 
                 <button type="submit" className="btn btn--primary-inv btn--block" disabled={status === 'sending'} data-cta="form-enviar">
                   {status === 'sending' ? <span className="spinner spinner--dark" aria-label="Enviando" /> : <>Enviar mi duda <Arrow /></>}
